@@ -56,20 +56,33 @@ export function FolderCard({
             group-hover:bg-edis-ink-2
           "
         >
+          {/* Mint halo outside, deep-mint chip inside, white icon.
+              Darker green (#007F3E → #00572B) keeps mint brand but gives
+              enough contrast for a white icon (~5:1 average, AA UI). */}
           <div
             className="
               flex size-10 items-center justify-center rounded-lg
-              border border-primary/20 bg-primary/10 text-primary
-              transition-colors duration-150
+              border border-primary/15 bg-primary/10 p-[3px]
+              transition-all duration-150
               group-hover:border-primary/30 group-hover:bg-primary/15
             "
           >
-            <Icon
-              icon={Folder01Icon}
-              size={20}
-              strokeWidth={1.5}
-              className="size-[20px]"
-            />
+            <div
+              className="
+                flex h-full w-full items-center justify-center rounded-md
+                bg-gradient-to-br from-[#007F3E] to-[#00572B] text-white
+                shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_2px_6px_rgba(0,229,115,0.18)]
+                transition-shadow duration-150
+                group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.26),0_3px_10px_rgba(0,229,115,0.3)]
+              "
+            >
+              <Icon
+                icon={Folder01Icon}
+                size={18}
+                strokeWidth={2.25}
+                className="size-[18px]"
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-0.5 pt-1">

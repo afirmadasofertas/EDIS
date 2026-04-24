@@ -53,20 +53,31 @@ export function FolderListItem({
             group-hover:border-edis-line-3 group-hover:bg-edis-ink-2
           "
         >
+          {/* Mint halo + deep-mint chip + white icon. Same treatment as FolderCard. */}
           <div
             className="
               flex size-9 shrink-0 items-center justify-center rounded-md
-              border border-primary/20 bg-primary/10 text-primary
-              transition-colors duration-150
+              border border-primary/15 bg-primary/10 p-[2.5px]
+              transition-all duration-150
               group-hover:border-primary/30 group-hover:bg-primary/15
             "
           >
-            <Icon
-              icon={Folder01Icon}
-              size={18}
-              strokeWidth={1.5}
-              className="size-[18px]"
-            />
+            <div
+              className="
+                flex h-full w-full items-center justify-center rounded-[5px]
+                bg-gradient-to-br from-[#007F3E] to-[#00572B] text-white
+                shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_2px_6px_rgba(0,229,115,0.18)]
+                transition-shadow duration-150
+                group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.26),0_3px_10px_rgba(0,229,115,0.3)]
+              "
+            >
+              <Icon
+                icon={Folder01Icon}
+                size={16}
+                strokeWidth={2.25}
+                className="size-[16px]"
+              />
+            </div>
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col">
