@@ -1,13 +1,22 @@
+"use client";
+
+import { useState, type ReactNode } from "react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icon";
 import { NewFolderDialog } from "@/components/shared/new-folder-dialog";
-import { DriveBrowser } from "./_browser";
+import { NewPromptDialog } from "@/components/shared/new-prompt-dialog";
+import { DriveBrowser, type LibraryMode } from "./_browser";
 import { NotificationsButton } from "./_notifications-button";
-import { SAMPLE_FOLDERS } from "./_data";
+import {
+  SAMPLE_FOLDERS,
+  SAMPLE_PROMPTS,
+} from "./_data";
 
 export default function DrivePage() {
+  const [mode, setMode] = useState<LibraryMode>("creatives");
+
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
       {/* Header */}
@@ -18,39 +27,63 @@ export default function DrivePage() {
             className="font-display text-[30px] font-medium leading-[1.1] tracking-tight text-foreground"
             style={{ letterSpacing: "-0.025em" }}
           >
-            Drive Criativos
+            Drive
           </h1>
           <p className="text-[14px] leading-[1.55] text-edis-text-3">
-            Gerencie seus arquivos de criativos.
+            Organize criativos e prompts em um só lugar.
           </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <NotificationsButton />
-          <NewFolderDialog
-            trigger={
-              <Button
-                size="sm"
-                className="
-                  h-9 gap-2 rounded-md bg-primary px-3.5
-                  text-[13px] font-medium text-primary-foreground
-                  hover:bg-[#33eb8c]
-                "
-              >
-                <Icon
-                  icon={Add01Icon}
-                  size={16}
-                  strokeWidth={2}
-                  className="size-[16px]"
-                />
-                Nova Pasta
-              </Button>
-            }
-          />
+          {mode === "prompts" ? (
+            <NewPromptDialog
+              trigger={
+                <PrimaryActionButton icon={Add01Icon}>
+                  Novo Prompt
+                </PrimaryActionButton>
+              }
+            />
+          ) : (
+            <NewFolderDialog
+              trigger={
+                <PrimaryActionButton icon={Add01Icon}>
+                  Nova Pasta
+                </PrimaryActionButton>
+              }
+            />
+          )}
         </div>
       </header>
 
       {/* Interactive browser — search / filters / view toggle / results */}
-      <DriveBrowser folders={SAMPLE_FOLDERS} />
+      <DriveBrowser
+        folders={SAMPLE_FOLDERS}
+        prompts={SAMPLE_PROMPTS}
+        mode={mode}
+        onModeChange={setMode}
+      />
     </div>
+  );
+}
+
+function PrimaryActionButton({
+  icon,
+  children,
+}: {
+  icon: typeof Add01Icon;
+  children: ReactNode;
+}) {
+  return (
+    <Button
+      size="sm"
+      className="
+        h-9 gap-2 rounded-md bg-primary px-3.5
+        text-[13px] font-medium text-primary-foreground
+        hover:bg-[#33eb8c]
+      "
+    >
+      <Icon icon={icon} size={16} strokeWidth={2} className="size-[16px]" />
+      {children}
+    </Button>
   );
 }

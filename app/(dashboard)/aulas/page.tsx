@@ -11,13 +11,11 @@ export default function AulasPage() {
           className="font-display text-[30px] font-medium leading-[1.1] tracking-tight text-foreground"
           style={{ letterSpacing: "-0.025em" }}
         >
-          Tire dúvidas e aprenda a plataforma.
+          Bem-vindo às aulas do EDIS
         </h1>
         <p className="max-w-2xl text-[14px] leading-[1.55] text-edis-text-3">
-          Vídeos curtos e artigos objetivos cobrindo Editor, CrowAI, Drive,
-          Analytics e fundamentos de copy e research. Se pintou dúvida de como
-          algo funciona por aqui, provavelmente já tem resposta — é mais rápido
-          que abrir um ticket.
+          Tire dúvidas e aproveite ao máximo o EDIS com este minicurso e outras
+          informações.
         </p>
       </header>
 

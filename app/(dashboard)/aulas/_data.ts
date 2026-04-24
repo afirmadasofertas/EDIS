@@ -1,10 +1,9 @@
 /**
- * Aulas mock data — 5 modules with a realistic mix of video + article
- * lessons. Replace with CMS / backend data once the course platform ships.
+ * Aulas mock data. Replace with CMS / backend data once the course platform
+ * ships.
  *
  * Videos use Google's free sample mp4s so the HTML5 player works out of
- * the box with no extra config. Thumbnails come from picsum.photos
- * (already allowed in next.config.ts).
+ * the box with no extra config. Thumbnails live in public/aulas/thumbnails.
  */
 
 export type Level = "iniciante" | "intermediário" | "avançado";
@@ -42,53 +41,73 @@ export type Module = {
 
 export const MODULES: Module[] = [
   {
-    id: "copy-que-vende",
-    title: "Copy que vende",
+    id: "comecando",
+    title: "01 - Começando",
     description:
-      "Escrita persuasiva para direct response. Ganchos, estruturas e as heurísticas que levantam CTR sem gritar.",
-    thumbnailSeed: "aulas-copy",
+      "Primeiros passos para entender o EDIS, navegar pelas ferramentas e tirar dúvidas sem perder ritmo.",
+    thumbnailSeed: "modulo-01-comecando",
     level: "iniciante",
-    tags: ["Copy", "Fundamentos"],
+    tags: ["Começo", "Fundamentos"],
     instructor: "Marcos Viana",
   },
   {
-    id: "research-360",
-    title: "Research 360°",
+    id: "dashboard",
+    title: "02 - Dashboard",
     description:
-      "Como varrer Meta Ads, Reddit e TikTok pra extrair hook, ângulo e objeção antes de escrever qualquer coisa.",
-    thumbnailSeed: "aulas-research",
+      "Acompanhe criativos, métricas e sinais de performance em um só lugar antes de decidir o próximo passo.",
+    thumbnailSeed: "modulo-02-dashboard",
+    level: "iniciante",
+    tags: ["Dashboard", "Métricas"],
+    instructor: "Marcos Viana",
+  },
+  {
+    id: "space",
+    title: "03 - Space",
+    description:
+      "Gere imagens e vídeos livres com prompts, variações e regeneração dentro do fluxo de criação.",
+    thumbnailSeed: "modulo-03-space",
+    level: "iniciante",
+    tags: ["Space", "Geração"],
+    instructor: "Marcos Viana",
+  },
+  {
+    id: "editor",
+    title: "04 - Editor",
+    description:
+      "Use templates validados, troque assets e copy, crie variações e exporte criativos prontos para rodar.",
+    thumbnailSeed: "modulo-04-editor",
+    level: "iniciante",
+    tags: ["Editor", "Templates"],
+    instructor: "Marcos Viana",
+  },
+  {
+    id: "crow-ai",
+    title: "05 - CrowAI",
+    description:
+      "Transforme research de Meta Ads, Reddit e TikTok em hooks, ângulos, objeções e copy acionável.",
+    thumbnailSeed: "modulo-05-crow-ai",
     level: "intermediário",
-    tags: ["Research", "CrowAI"],
+    tags: ["CrowAI", "Research"],
     instructor: "Marcos Viana",
   },
   {
-    id: "editor-pro",
-    title: "Editor pro",
+    id: "swipe-files",
+    title: "06 - Swipe files",
     description:
-      "Montar criativo do zero no Editor EDIS — templates, assets, variações e o que otimiza tempo.",
-    thumbnailSeed: "aulas-editor",
+      "Organize anúncios validados por nicho, oferta e ângulo para encontrar referências úteis mais rápido.",
+    thumbnailSeed: "modulo-06-swipe-files",
+    level: "intermediário",
+    tags: ["Swipe", "Referências"],
+    instructor: "Marcos Viana",
+  },
+  {
+    id: "drive",
+    title: "07 - Drive",
+    description:
+      "Gerencie arquivos criativos, pastas, compartilhamentos e revisões sem tirar o time do fluxo.",
+    thumbnailSeed: "modulo-07-drive",
     level: "iniciante",
-    tags: ["Editor", "Produção"],
-    instructor: "Marcos Viana",
-  },
-  {
-    id: "analytics-iteracao",
-    title: "Analytics & iteração",
-    description:
-      "Ler os números: CPM, CTR, CPA, ROAS. Quando matar um criativo, quando escalar, quando iterar.",
-    thumbnailSeed: "aulas-analytics",
-    level: "avançado",
-    tags: ["Analytics", "Meta Ads"],
-    instructor: "Marcos Viana",
-  },
-  {
-    id: "templates-validados",
-    title: "Templates validados",
-    description:
-      "Catálogo comentado dos templates que rodaram nos últimos 90 dias, com notas de quando usar cada um.",
-    thumbnailSeed: "aulas-templates",
-    level: "iniciante",
-    tags: ["Templates", "Swipe"],
+    tags: ["Drive", "Arquivos"],
     instructor: "Marcos Viana",
   },
 ];
@@ -108,446 +127,317 @@ function video(i: number): string {
 }
 
 export const LESSONS: Lesson[] = [
-  // ── Copy que vende ──────────────────────────────────────────────────────
   {
-    id: "copy-01",
-    moduleId: "copy-que-vende",
+    id: "comecando-01",
+    moduleId: "comecando",
     order: 1,
     type: "video",
-    title: "Introdução: copy não é decoração",
+    title: "Comece Aqui: Como usar o EDIS",
     description:
-      "O que muda quando a copy puxa uma decisão em vez de descrever um produto. Referências e o que vamos cobrir no módulo.",
-    durationSec: 2 * 60 + 15,
+      "Um tour rápido para entender o fluxo do EDIS e saber por onde começar.",
+    durationSec: 4 * 60 + 30,
     videoUrl: video(0),
   },
   {
-    id: "copy-02",
-    moduleId: "copy-que-vende",
+    id: "comecando-02",
+    moduleId: "comecando",
     order: 2,
-    type: "article",
-    title: "10 ganchos testados",
-    description:
-      "Formato curto: ganchos que já rodaram em pelo menos 3 nichos diferentes com CTR acima da média.",
-    durationSec: 4 * 60,
-    content: [
-      { type: "heading", level: 2, text: "Por que gancho é 80% do criativo" },
-      {
-        type: "paragraph",
-        text:
-          "Gancho é o primeiro segundo do vídeo ou a primeira linha do anúncio. Se ele não prende, o resto não importa. Abaixo estão 10 padrões que testamos exaustivamente em nichos diversos (saúde, finanças, SaaS, ecommerce) com retorno consistente.",
-      },
-      { type: "heading", level: 3, text: "1. Contradição com autoridade" },
-      {
-        type: "paragraph",
-        text:
-          "Ex.: \"Todo mundo te disse que beber água em jejum é bom. Nutricionistas discordam.\" Contradiz uma crença estabelecida e adiciona autoridade.",
-      },
-      { type: "heading", level: 3, text: "2. Número específico + tempo" },
-      {
-        type: "paragraph",
-        text:
-          "Ex.: \"Em 73 horas descobri o que 12 anos de academia não ensinaram.\" Números não-redondos funcionam melhor que redondos.",
-      },
-      { type: "heading", level: 3, text: "3. Confissão pessoal" },
-      {
-        type: "paragraph",
-        text:
-          "Ex.: \"Quase entrei em falência por causa de um erro bobo de Meta Ads.\" Gera proximidade antes do pitch.",
-      },
-      { type: "heading", level: 3, text: "4. Pergunta incômoda" },
-      {
-        type: "paragraph",
-        text:
-          "Ex.: \"Quanto você paga hoje pra ficar preso onde está?\" Faz o usuário parar pra responder mentalmente.",
-      },
-      { type: "heading", level: 3, text: "5. Metáfora inesperada" },
-      {
-        type: "paragraph",
-        text:
-          "Ex.: \"Criativo sem research é como atirar no escuro com os olhos fechados.\" Torna abstrato em visual.",
-      },
-      {
-        type: "quote",
-        text:
-          "Um bom gancho não promete — ele interrompe. A promessa vem no segundo 3.",
-        attribution: "Eugene Schwartz (parafraseado)",
-      },
-      { type: "heading", level: 3, text: "6 a 10: no vídeo" },
-      {
-        type: "paragraph",
-        text:
-          "Os cinco restantes estão destrinchados na aula 4 — com exemplos reais de anúncios que rodaram em escala.",
-      },
-    ],
-  },
-  {
-    id: "copy-03",
-    moduleId: "copy-que-vende",
-    order: 3,
     type: "video",
-    title: "Estrutura AIDA moderna (não é a que te ensinaram)",
+    title: "Conhecendo as Ferramentas",
     description:
-      "A versão original não aguenta feed moderno. Vamos ver a AIDA com hook + tensão + pagamento simbólico.",
-    durationSec: 8 * 60 + 30,
+      "Veja como Dashboard, Space, Editor, CrowAI, Swipe files e Drive se conectam.",
+    durationSec: 6 * 60,
     videoUrl: video(1),
   },
   {
-    id: "copy-04",
-    moduleId: "copy-que-vende",
-    order: 4,
+    id: "comecando-03",
+    moduleId: "comecando",
+    order: 3,
     type: "video",
-    title: "Escrevendo pra direct response (longo vs curto)",
+    title: "Tirando Dúvidas",
     description:
-      "Quando usar vídeo de 15s vs long form de 3 minutos. Matemática do CPA por formato.",
-    durationSec: 12 * 60,
+      "Aprenda onde encontrar respostas e como seguir quando surgir uma dúvida.",
+    durationSec: 3 * 60 + 45,
     videoUrl: video(2),
   },
   {
-    id: "copy-05",
-    moduleId: "copy-que-vende",
-    order: 5,
-    type: "article",
-    title: "Monte seu swipe file pessoal",
-    description:
-      "Como organizar anúncios salvos pra inspiração utilizável — não decoração visual.",
-    durationSec: 6 * 60,
-    content: [
-      { type: "heading", level: 2, text: "Por que swipe file normal não funciona" },
-      {
-        type: "paragraph",
-        text:
-          "A maioria das pessoas salva screenshots aleatórios em pastas sem estrutura. Quando precisam de inspiração, não conseguem achar nada. O swipe útil é indexado por ângulo + objeção, não por estética.",
-      },
-      { type: "heading", level: 2, text: "A estrutura que funciona" },
-      {
-        type: "list",
-        items: [
-          "Pasta por ângulo (preço, transformação, autoridade, medo, curiosidade)",
-          "Nome do arquivo inclui hook + nicho (ex: \"contradição-saude.png\")",
-          "Um .txt por pasta com 3 bullets: por que salvou, o que extrair, variação testável",
-          "Revisão mensal: arquivo que nunca foi usado sai",
-        ],
-      },
-      { type: "heading", level: 2, text: "Integração com EDIS" },
-      {
-        type: "paragraph",
-        text:
-          "O Swipe Files do próprio EDIS já indexa por ângulo. Se você salvar de lá, o .txt é automático. O valor fica no seu curadoria manual do que realmente serve.",
-      },
-    ],
-  },
-
-  // ── Research 360° ──────────────────────────────────────────────────────
-  {
-    id: "research-01",
-    moduleId: "research-360",
+    id: "dashboard-01",
+    moduleId: "dashboard",
     order: 1,
     type: "video",
-    title: "O que é research de verdade",
+    title: "Visão geral do Dashboard",
     description:
-      "Não é lookalike. Research é extrair ângulo, objeção e linguagem do próprio mercado antes de escrever.",
-    durationSec: 5 * 60 + 40,
+      "Entenda os principais blocos da tela e como ler o status dos seus criativos.",
+    durationSec: 5 * 60 + 20,
     videoUrl: video(3),
   },
   {
-    id: "research-02",
-    moduleId: "research-360",
+    id: "dashboard-02",
+    moduleId: "dashboard",
     order: 2,
     type: "video",
-    title: "Scrapando Meta Ads Library",
+    title: "Lendo métricas sem ruído",
     description:
-      "Como usar a biblioteca pública do Meta pra mapear o que concorrentes estão rodando há > 30 dias.",
-    durationSec: 14 * 60 + 10,
+      "Use os sinais certos para decidir se vale iterar, pausar ou escalar.",
+    durationSec: 7 * 60 + 10,
     videoUrl: video(4),
   },
   {
-    id: "research-03",
-    moduleId: "research-360",
+    id: "dashboard-03",
+    moduleId: "dashboard",
     order: 3,
     type: "article",
-    title: "Reddit é ouro — se você souber ler",
-    description: "Subreddits, filtros temporais, e como separar sinal de ruído.",
-    durationSec: 5 * 60,
+    title: "Rotina diária de análise",
+    description:
+      "Um checklist simples para revisar campanhas sem se perder em métricas.",
+    durationSec: 4 * 60,
     content: [
-      { type: "heading", level: 2, text: "O que Reddit tem que outras redes não têm" },
+      { type: "heading", level: 2, text: "A análise em poucos minutos" },
       {
         type: "paragraph",
         text:
-          "Reddit é uma das poucas redes onde as pessoas ainda escrevem em texto longo sobre problemas reais. Isso é ouro pra quem quer entender a LINGUAGEM exata do mercado.",
+          "Comece pelos criativos que mais gastaram, compare variação de custo e só depois aprofunde em métricas secundárias. O Dashboard existe para reduzir decisões impulsivas.",
       },
-      { type: "heading", level: 2, text: "Fluxo de research" },
       {
         type: "list",
         items: [
-          "Identifique 3-5 subreddits do nicho (r/fitness, r/advancedfitness, r/loseit etc)",
-          "Filtre por \"top of year\" — posts que subiram de verdade",
-          "Leia COMENTÁRIOS, não o post. Objeções moram lá",
-          "Copie frase literal. Não parafrasee",
+          "Revise campanhas ativas antes de abrir novas abas.",
+          "Compare criativos por objetivo, não por vaidade visual.",
+          "Anote hipóteses de melhoria antes de editar qualquer peça.",
         ],
-      },
-      {
-        type: "quote",
-        text:
-          "As melhores hooks de copy não saem da sua cabeça. Elas saem de comentários de Reddit com 200 upvotes.",
       },
     ],
   },
   {
-    id: "research-04",
-    moduleId: "research-360",
-    order: 4,
+    id: "space-01",
+    moduleId: "space",
+    order: 1,
     type: "video",
-    title: "TikTok: pattern interrupts em escala",
+    title: "Criando sua primeira imagem no Space",
     description:
-      "Como a feed page recomenda, o que copiar da lógica pra feed de Meta, e por que o hook precisa ser mais curto ainda.",
-    durationSec: 9 * 60 + 20,
+      "Use prompts, referências e variações para sair de uma ideia para um visual testável.",
+    durationSec: 6 * 60 + 15,
     videoUrl: video(5),
   },
   {
-    id: "research-05",
-    moduleId: "research-360",
-    order: 5,
+    id: "space-02",
+    moduleId: "space",
+    order: 2,
     type: "video",
-    title: "Consolidando: do research ao briefing",
+    title: "Variações que preservam a direção",
     description:
-      "Como sair de 40 páginas de screenshots pra um briefing de 1 página que o copywriter usa.",
-    durationSec: 11 * 60,
+      "Como ajustar composição, estilo e formato sem perder a ideia central.",
+    durationSec: 8 * 60,
     videoUrl: video(0),
   },
-
-  // ── Editor pro ──────────────────────────────────────────────────────────
+  {
+    id: "space-03",
+    moduleId: "space",
+    order: 3,
+    type: "article",
+    title: "Boas práticas de prompt",
+    description:
+      "Uma estrutura curta para prompts mais claros e resultados mais consistentes.",
+    durationSec: 5 * 60,
+    content: [
+      { type: "heading", level: 2, text: "Prompt bom tem direção" },
+      {
+        type: "paragraph",
+        text:
+          "Descreva o objetivo do criativo, o assunto principal, o enquadramento, a luz, o formato e o que deve ser evitado. Quanto menos ambíguo, melhor o resultado.",
+      },
+      {
+        type: "list",
+        items: [
+          "Comece pelo uso final da imagem.",
+          "Defina uma composição principal.",
+          "Evite pedir muitos estilos ao mesmo tempo.",
+        ],
+      },
+    ],
+  },
   {
     id: "editor-01",
-    moduleId: "editor-pro",
+    moduleId: "editor",
     order: 1,
     type: "video",
-    title: "Tour: o que o Editor faz",
-    description: "10 minutos rápidos pelo Editor — o que ele faz e o que não faz.",
-    durationSec: 10 * 60 + 15,
+    title: "Tour pelo Editor",
+    description:
+      "Conheça a área de edição, os templates e os pontos que mais economizam tempo.",
+    durationSec: 7 * 60,
     videoUrl: video(1),
   },
   {
     id: "editor-02",
-    moduleId: "editor-pro",
+    moduleId: "editor",
     order: 2,
     type: "video",
-    title: "Montando seu primeiro template",
+    title: "Criando variações a partir de um template",
     description:
-      "Pega um brief da referência, abre template, troca elementos, exporta. Do zero ao MP4.",
-    durationSec: 13 * 60 + 45,
+      "Troque imagem, copy e CTA para gerar versões prontas para teste.",
+    durationSec: 9 * 60 + 30,
     videoUrl: video(2),
   },
   {
     id: "editor-03",
-    moduleId: "editor-pro",
+    moduleId: "editor",
     order: 3,
     type: "article",
-    title: "Os 4 elementos de todo criativo que converte",
-    description: "Hook visual, promessa, prova, CTA. O resto é decoração.",
-    durationSec: 4 * 60,
+    title: "Checklist antes de exportar",
+    description:
+      "Revise contraste, hierarquia, formatos e consistência antes de publicar.",
+    durationSec: 4 * 60 + 20,
     content: [
-      { type: "heading", level: 2, text: "Anatomia de um criativo que converte" },
+      { type: "heading", level: 2, text: "O que conferir" },
       {
-        type: "paragraph",
-        text:
-          "Independente de ser vídeo ou estático, todo criativo performático tem 4 elementos. Se algum faltar, o CTR afunda.",
-      },
-      { type: "heading", level: 3, text: "1. Hook visual" },
-      {
-        type: "paragraph",
-        text:
-          "Primeiro 0,8s. É o que faz o dedo parar de scrollar. Contraste alto, movimento, rosto, número na tela.",
-      },
-      { type: "heading", level: 3, text: "2. Promessa clara" },
-      {
-        type: "paragraph",
-        text:
-          "Em uma frase: o que a pessoa ganha. Não é feature. É benefício pessoal.",
-      },
-      { type: "heading", level: 3, text: "3. Prova" },
-      {
-        type: "paragraph",
-        text:
-          "Depoimento, resultado numérico, antes/depois, selo de autoridade. Uma das quatro, escolha a que o nicho acredita.",
-      },
-      { type: "heading", level: 3, text: "4. CTA direta" },
-      {
-        type: "paragraph",
-        text:
-          "Verbo + próximo passo específico. \"Clique no link\" já não basta — \"pegue o desconto antes que expire\" funciona melhor.",
+        type: "list",
+        items: [
+          "A promessa principal aparece rápido.",
+          "O CTA está legível no formato final.",
+          "Logo, produto e oferta não competem entre si.",
+          "A variação tem uma hipótese clara.",
+        ],
       },
     ],
   },
   {
-    id: "editor-04",
-    moduleId: "editor-pro",
-    order: 4,
+    id: "crow-ai-01",
+    moduleId: "crow-ai",
+    order: 1,
     type: "video",
-    title: "Variações: a matemática que ninguém te contou",
-    description: "Por que 20 variações são melhores que 1 polido. Como sistematizar.",
-    durationSec: 7 * 60 + 50,
+    title: "Como o CrowAI faz research",
+    description:
+      "Veja como o agente encontra sinais de mercado antes de escrever copy.",
+    durationSec: 8 * 60 + 45,
     videoUrl: video(3),
   },
-
-  // ── Analytics & iteração ────────────────────────────────────────────────
   {
-    id: "analytics-01",
-    moduleId: "analytics-iteracao",
-    order: 1,
-    type: "article",
-    title: "Glossário honesto: CPM, CTR, CPC, CPA, ROAS",
-    description:
-      "O que cada métrica de fato diz — sem o marketês corporativo.",
-    durationSec: 6 * 60,
-    content: [
-      { type: "heading", level: 2, text: "Por que o glossário oficial atrapalha" },
-      {
-        type: "paragraph",
-        text:
-          "A maioria dos guias trata métricas como fórmulas. Na prática, cada métrica responde UMA pergunta específica — e saber qual é essa pergunta vale mais que a definição.",
-      },
-      { type: "heading", level: 3, text: "CPM — quão caro é esse público?" },
-      {
-        type: "paragraph",
-        text:
-          "Custo por mil impressões. Alto = público disputado. Importante, mas não controlável por criativo.",
-      },
-      { type: "heading", level: 3, text: "CTR — meu hook funciona?" },
-      {
-        type: "paragraph",
-        text:
-          "Clique por impressão. Essa é a métrica do criativo. Abaixo de 1% em direct response = rever hook.",
-      },
-      { type: "heading", level: 3, text: "CPA — minha oferta aguenta?" },
-      {
-        type: "paragraph",
-        text:
-          "Custo por aquisição. Se o CPA é maior que LTV, a festa acabou. Métrica do offer + funil.",
-      },
-      { type: "heading", level: 3, text: "ROAS — meu dinheiro volta?" },
-      {
-        type: "paragraph",
-        text:
-          "Revenue ÷ spend. Métrica final. Mas engana: ROAS de 1,5 pode ser lucro (produto com margem alta) ou prejuízo (commodities).",
-      },
-    ],
-  },
-  {
-    id: "analytics-02",
-    moduleId: "analytics-iteracao",
+    id: "crow-ai-02",
+    moduleId: "crow-ai",
     order: 2,
     type: "video",
-    title: "Quando matar um criativo",
+    title: "Transformando dados em hooks",
     description:
-      "Janela de aprendizado, limiares de decisão e o erro de matar cedo demais.",
-    durationSec: 11 * 60 + 5,
+      "Converta objeções, comentários e anúncios ativos em ideias de criativo.",
+    durationSec: 10 * 60 + 10,
     videoUrl: video(4),
   },
   {
-    id: "analytics-03",
-    moduleId: "analytics-iteracao",
+    id: "crow-ai-03",
+    moduleId: "crow-ai",
     order: 3,
-    type: "video",
-    title: "Quando escalar — e como não quebrar",
+    type: "article",
+    title: "Como revisar a copy gerada",
     description:
-      "A regra dos 20%, quando usar CBO vs ABO, e sinais de fadiga.",
-    durationSec: 15 * 60 + 30,
+      "Critérios para manter a copy precisa, humana e alinhada ao nicho.",
+    durationSec: 5 * 60 + 30,
+    content: [
+      { type: "heading", level: 2, text: "Revisão inteligente" },
+      {
+        type: "paragraph",
+        text:
+          "A saída do CrowAI é um ponto de partida forte. Revise promessa, prova, clareza e aderência ao público antes de enviar para o Editor.",
+      },
+      {
+        type: "list",
+        items: [
+          "Procure frases genéricas e torne-as específicas.",
+          "Mantenha o benefício visível antes da feature.",
+          "Use a linguagem do mercado sem copiar concorrentes.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "swipe-files-01",
+    moduleId: "swipe-files",
+    order: 1,
+    type: "video",
+    title: "Organizando referências por ângulo",
+    description:
+      "Aprenda a salvar anúncios de um jeito que ajude na hora de criar.",
+    durationSec: 6 * 60 + 50,
     videoUrl: video(5),
   },
   {
-    id: "analytics-04",
-    moduleId: "analytics-iteracao",
-    order: 4,
+    id: "swipe-files-02",
+    moduleId: "swipe-files",
+    order: 2,
     type: "video",
-    title: "Iterar vs recomeçar",
+    title: "Encontrando padrões que valem teste",
     description:
-      "Quando um criativo serve de base pra variação e quando é melhor voltar pro research.",
-    durationSec: 8 * 60 + 40,
+      "Compare peças por oferta, promessa e mecanismo para separar sinal de ruído.",
+    durationSec: 8 * 60 + 20,
     videoUrl: video(0),
   },
   {
-    id: "analytics-05",
-    moduleId: "analytics-iteracao",
-    order: 5,
+    id: "swipe-files-03",
+    moduleId: "swipe-files",
+    order: 3,
     type: "article",
-    title: "Dashboard mental: as 3 perguntas diárias",
-    description: "O que olhar toda manhã em 90 segundos.",
-    durationSec: 3 * 60,
+    title: "Como transformar referência em hipótese",
+    description:
+      "Use uma referência como ponto de partida sem copiar a peça original.",
+    durationSec: 4 * 60 + 40,
     content: [
-      { type: "heading", level: 2, text: "90 segundos, 3 perguntas" },
+      { type: "heading", level: 2, text: "Referência não é atalho" },
       {
         type: "paragraph",
         text:
-          "Abrir o Meta Ads Manager todo dia pra olhar 40 métricas é o caminho rápido pra decisão ruim. Essas 3 perguntas resolvem 80% dos casos:",
+          "O objetivo do Swipe files é entender por que um criativo funciona. Extraia o ângulo, a promessa e a estrutura antes de criar sua versão.",
       },
       {
         type: "list",
         items: [
-          "1. Meu CPA ontem está dentro do target? — se sim, deixa rodar",
-          "2. Algum criativo subiu CPM 30% em 48h? — sinal de fadiga, prepara variação",
-          "3. ROAS semanal > ROAS mensal? — tá melhorando, valor investir mais",
+          "Identifique a objeção principal.",
+          "Escreva uma hipótese testável.",
+          "Crie uma variação com identidade própria.",
         ],
-      },
-      {
-        type: "quote",
-        text:
-          "Gestor que olha painel toda hora toma decisão ruim. O painel serve o setup, não o instinto.",
       },
     ],
   },
-
-  // ── Templates validados ─────────────────────────────────────────────────
   {
-    id: "templates-01",
-    moduleId: "templates-validados",
+    id: "drive-01",
+    moduleId: "drive",
     order: 1,
-    type: "article",
-    title: "Como a biblioteca foi construída",
-    description:
-      "Critérios de validação dos templates: CPA, volume, longevidade, nichos.",
-    durationSec: 4 * 60,
-    content: [
-      { type: "heading", level: 2, text: "O que vira template no EDIS" },
-      {
-        type: "paragraph",
-        text:
-          "Só entra na biblioteca depois de bater 3 critérios simultaneamente:",
-      },
-      {
-        type: "list",
-        items: [
-          "CPA abaixo do target em ao menos 2 contas diferentes",
-          "Volume > 50k impressões (elimina falso positivo de amostra)",
-          "Longevidade — continuou rodando > 21 dias sem fatiga",
-        ],
-      },
-      {
-        type: "paragraph",
-        text:
-          "A regra elimina uns 90% dos criativos de alta performance de curto prazo, mas esses 10% restantes são o que realmente escala.",
-      },
-    ],
-  },
-  {
-    id: "templates-02",
-    moduleId: "templates-validados",
-    order: 2,
     type: "video",
-    title: "Top 5 templates de saúde & fitness",
+    title: "Gerenciando criativos e arquivos",
     description:
-      "Os 5 templates que mais performaram no nicho nos últimos 90 dias, com notas de uso.",
-    durationSec: 13 * 60 + 20,
+      "Organize criativos, materiais de campanha e versões em uma estrutura clara.",
+    durationSec: 5 * 60 + 35,
     videoUrl: video(1),
   },
   {
-    id: "templates-03",
-    moduleId: "templates-validados",
-    order: 3,
+    id: "drive-02",
+    moduleId: "drive",
+    order: 2,
     type: "video",
-    title: "Top 5 templates de SaaS & infoprodutos",
-    description: "Mesmo formato, nicho diferente. O que mudou no hook.",
-    durationSec: 11 * 60 + 45,
+    title: "Compartilhamento e revisão",
+    description:
+      "Veja como enviar materiais para revisão e acompanhar o que mudou.",
+    durationSec: 7 * 60 + 25,
     videoUrl: video(2),
+  },
+  {
+    id: "drive-03",
+    moduleId: "drive",
+    order: 3,
+    type: "article",
+    title: "Padrão de organização recomendado",
+    description:
+      "Um modelo simples para evitar arquivos soltos e versões duplicadas.",
+    durationSec: 4 * 60 + 10,
+    content: [
+      { type: "heading", level: 2, text: "Estrutura sugerida" },
+      {
+        type: "list",
+        items: [
+          "Separe pastas por campanha ou cliente.",
+          "Use nomes com data, formato e variação.",
+          "Arquive criativos antigos sem apagar histórico útil.",
+        ],
+      },
+    ],
   },
 ];
 
@@ -567,8 +457,8 @@ export function getLesson(lessonId: string): Lesson | undefined {
   return LESSONS.find((l) => l.id === lessonId);
 }
 
-export function thumbUrl(seed: string, w = 640, h = 360): string {
-  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
+export function thumbUrl(seed: string, _w = 640, _h = 360): string {
+  return `/aulas/thumbnails/${seed}.png`;
 }
 
 /** Format duration in seconds as "Xh Ym" / "Xm Ys" / "Xs". */
