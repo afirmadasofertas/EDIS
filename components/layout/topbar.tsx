@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Icon } from "@/components/icon";
-import { PAGE_TITLES } from "./nav-items";
+import { PAGE_TITLES, getGroupForPath } from "./nav-items";
 
 export function Topbar() {
   const pathname = usePathname() ?? "/dashboard";
@@ -17,6 +17,7 @@ export function Topbar() {
       pathname.startsWith(href)
     )?.[1] ??
     "Workspace";
+  const group = getGroupForPath(pathname);
 
   return (
     <header
@@ -32,7 +33,7 @@ export function Topbar() {
       />
 
       <div className="flex min-w-0 items-center gap-2">
-        <span className="edis-eyebrow hidden sm:inline">Workspace</span>
+        <span className="edis-eyebrow hidden sm:inline">{group}</span>
         <span className="hidden text-edis-text-4 sm:inline">/</span>
         <h1
           className="truncate font-display text-[15px] font-medium tracking-tight text-foreground"

@@ -54,6 +54,22 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+/**
+ * Returns the group label (Workspace / Library / Account) the given pathname
+ * belongs to — used by the topbar to render a dynamic breadcrumb eyebrow.
+ */
+export function getGroupForPath(pathname: string | null): string {
+  if (!pathname) return NAV_GROUPS[0]?.label ?? "Workspace";
+  for (const group of NAV_GROUPS) {
+    for (const item of group.items) {
+      if (pathname === item.href || pathname.startsWith(`${item.href}/`)) {
+        return group.label;
+      }
+    }
+  }
+  return NAV_GROUPS[0]?.label ?? "Workspace";
+}
+
 export const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/space": "Space",
