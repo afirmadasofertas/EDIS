@@ -161,80 +161,131 @@ export async function POST(req: Request) {
   return NextResponse.json({ imageUrl: dataUrl });
 }
 
+// Prompt structure follows Google's Nano Banana guide formula:
+//   [References] + [Relationship instruction] + [New scenario]
+// Blocks are joined with double newlines so the model parses them as
+// distinct sections, in roughly the order the guide recommends:
+//   System rules → Mode → Reference relationship → Subject → Scene →
+//   Look (style/lighting/palette) → Aspect → References → Typography.
 function buildPrompt(p: ApiPayload): string {
-  const lines: string[] = [SYSTEM_DIRECTIVE];
+  const blocks: string[] = [SYSTEM_DIRECTIVE];
 
-  // Mode preset goes right after the system directive — it's the loudest
-  // signal after the core rules.
-  if (p.mode) lines.push(MODE[p.mode]);
+  if (p.mode) blocks.push(MODE[p.mode]);
 
-  if (p.niche) lines.push(`Brand / niche context: ${p.niche}.`);
-
+  // Reference relationship — Google calls this out as the single biggest
+  // multimodal lever. Tell the model EXACTLY how the attached photo
+  // relates to the requested output.
   const subj = p.subject ?? {};
-  if (subj.quantity) lines.push(QUANTITY[subj.quantity]);
-  if (subj.gender && GENDER[subj.gender]) lines.push(GENDER[subj.gender]);
-  if (subj.framing) lines.push(FRAMING[subj.framing]);
-  if (subj.position) lines.push(POSITION[subj.position]);
-
-  const style = p.style ?? {};
-  if (style.visual_style) lines.push(VISUAL_STYLE[style.visual_style]);
-  if (style.lighting) lines.push(LIGHTING[style.lighting]);
-
-  if (Array.isArray(style.color_palette) && style.color_palette.length) {
-    lines.push(
-      `Color palette to dominate the composition: ${style.color_palette.join(", ")}.`
-    );
-  }
-  if (style.dimensions) lines.push(DIMENSIONS[style.dimensions]);
-
-  const copy = p.copy ?? {};
-  const copyParts: string[] = [];
-  if (copy.headline) copyParts.push(`headline "${copy.headline}"`);
-  if (copy.subheadline) copyParts.push(`subheadline "${copy.subheadline}"`);
-  if (copy.cta) copyParts.push(`CTA button "${copy.cta}"`);
-  if (copyParts.length) {
-    const hAlign = p.composition?.text_alignment;
-    const vAlign = p.composition?.text_vertical;
-    const placement = [
-      hAlign ? TEXT_ALIGNMENT[hAlign] : null,
-      vAlign ? TEXT_VERTICAL[vAlign] : null,
-    ]
-      .filter(Boolean)
-      .join(" ");
-    lines.push(
-      `Render legible typography: ${copyParts.join(", ")}.${placement ? " " + placement : ""} ` +
-        `Font family "${style.font_family ?? "modern sans-serif"}". Spell every word exactly as written. ` +
-        `These are the ONLY words allowed in the image — do not invent, add or paraphrase any other text.`
-    );
-  } else {
-    // No copy supplied → forbid any rendered text. Without this the model
-    // happily hallucinates a headline from the niche / creative note.
-    lines.push(
-      "RENDER ZERO TEXT in the image. No headline, no subheadline, no CTA, no captions, no logos, no signage, no labels, no watermarks, no numbers, no letters of any kind. The image must contain only the photographed subject and background — no typography whatsoever."
-    );
-  }
-
-  if (p.references?.length) {
-    lines.push(
-      "Use the attached reference images strictly as inspiration for tone, lighting and composition — never for content or identity."
-    );
-  }
   const photosCount = subj.photos_count ?? 0;
   if (photosCount > 0) {
-    lines.push(
+    blocks.push(
       photosCount === 1
-        ? "Use the attached subject photo as the literal subject in the final image, preserving every physical detail."
-        : `Use the ${photosCount} attached subject photos together as the literal subject in the final image. The photos show the same subject from different angles or moments — preserve every physical detail consistently across the composition.`
+        ? "Using the attached subject photo as ground truth, render the same person in the new scene described below — identical face, identical features. Only the surrounding scene, lighting and styling change."
+        : `Using the ${photosCount} attached subject photos as ground truth (different angles or moments of the same person), render that exact person in the new scene described below. Match every facial feature consistently across the composition; only the surrounding scene, lighting and styling change.`
     );
   }
 
-  // User free-form direction (optional). Goes last so it can refine anything
-  // above without overriding the SYSTEM_DIRECTIVE.
+  // Subject characterization — narrative form, joined into one paragraph.
+  const subjectBits: string[] = [];
+  if (subj.quantity) subjectBits.push(QUANTITY[subj.quantity]);
+  if (subj.gender && GENDER[subj.gender]) subjectBits.push(GENDER[subj.gender]);
+  if (subj.framing) subjectBits.push(FRAMING[subj.framing]);
+  if (subj.position) subjectBits.push(POSITION[subj.position]);
+  if (subjectBits.length) blocks.push(subjectBits.join(" "));
+
+  // Scene / niche / creative direction.
+  const sceneBits: string[] = [];
+  if (p.niche) sceneBits.push(`Brand context: ${p.niche}.`);
   if (p.creative_note?.trim()) {
-    lines.push(
-      `Additional creative direction from the user (use as soft guidance, never break the photorealism / identity-preservation rules above): ${p.creative_note.trim()}`
+    sceneBits.push(`Scene direction: ${p.creative_note.trim()}.`);
+  }
+  if (sceneBits.length) blocks.push(sceneBits.join(" "));
+
+  // Look: style + lighting + palette + aspect.
+  const style = p.style ?? {};
+  const lookBits: string[] = [];
+  if (style.visual_style) lookBits.push(VISUAL_STYLE[style.visual_style]);
+  if (style.lighting) lookBits.push(LIGHTING[style.lighting]);
+  if (Array.isArray(style.color_palette) && style.color_palette.length) {
+    lookBits.push(
+      `Color palette dominating the frame: ${style.color_palette.join(", ")}.`
+    );
+  }
+  if (style.dimensions) lookBits.push(DIMENSIONS[style.dimensions]);
+  if (lookBits.length) blocks.push(lookBits.join(" "));
+
+  // Inspiration references — explicit relationship statement.
+  if (p.references?.length) {
+    blocks.push(
+      "The other attached images are inspiration references for tone, lighting and composition only — never for identity or content."
     );
   }
 
-  return lines.join(" ");
+  // Typography — per-line styling, Google's recommended structured form.
+  blocks.push(buildTypographyBlock(p));
+
+  return blocks.join("\n\n");
+}
+
+function buildTypographyBlock(p: ApiPayload): string {
+  const copy = p.copy ?? {};
+  const fontName = p.style?.font_family ?? "modern sans-serif";
+
+  type Line = { role: string; text: string; weight: string; scale: string };
+  const lines: Line[] = [];
+  if (copy.headline) {
+    lines.push({
+      role: "primary headline",
+      text: copy.headline,
+      weight: "bold",
+      scale: "large, dominant scale",
+    });
+  }
+  if (copy.subheadline) {
+    lines.push({
+      role: "subheadline",
+      text: copy.subheadline,
+      weight: "medium-weight",
+      scale: "smaller secondary scale",
+    });
+  }
+  if (copy.cta) {
+    lines.push({
+      role: "CTA button label",
+      text: copy.cta,
+      weight: "bold",
+      scale: "compact, inside a rounded pill button",
+    });
+  }
+
+  // No copy → forbid any text. Without this Gemini hallucinates a headline
+  // from the niche / creative note.
+  if (lines.length === 0) {
+    return "Render zero text in the image — no headlines, captions, logos, signage, labels, watermarks, numbers or letters of any kind. The frame contains only the photographed subject and scene.";
+  }
+
+  const rendered = lines
+    .map(
+      (l) =>
+        `Render the ${l.role} "${l.text}" in a ${l.weight} ${fontName} font, ${l.scale}.`
+    )
+    .join(" ");
+
+  const hAlign = p.composition?.text_alignment;
+  const vAlign = p.composition?.text_vertical;
+  const placement = [
+    hAlign ? TEXT_ALIGNMENT[hAlign] : null,
+    vAlign ? TEXT_VERTICAL[vAlign] : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return [
+    "Render typography with the following exact styling:",
+    rendered,
+    placement,
+    "Spell every word exactly as written. These are the only words that may appear in the image.",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
