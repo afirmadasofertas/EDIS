@@ -39,7 +39,9 @@ export default async function DashboardLayout({
             className={
               isEditor
                 ? "flex-1 overflow-hidden"
-                : "flex-1 p-6 lg:p-8"
+                : // Extra pt-8/pt-12 so page headers don't bleed through the
+                  // topbar's bg-background/80 backdrop-blur.
+                  "flex-1 px-6 pb-6 pt-8 lg:px-8 lg:pb-8 lg:pt-12"
             }
           >
             {children}
