@@ -4,7 +4,7 @@ import {
   OrthogonalEdgeIcon,
   Image02Icon,
   SaturnIcon,
-  GlobalSearchIcon,
+  MagicWand01Icon,
   HardDriveIcon,
   Mortarboard02Icon,
   Coins01Icon,
@@ -40,7 +40,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Library",
     items: [
-      { href: "/swipe-files", label: "Swipe files", icon: GlobalSearchIcon },
+      { href: "/swipe-files", label: "Gerador", icon: MagicWand01Icon },
       { href: "/drive", label: "Drive", icon: HardDriveIcon },
       { href: "/aulas", label: "Aulas", icon: Mortarboard02Icon },
     ],
@@ -75,7 +75,7 @@ export const PAGE_TITLES: Record<string, string> = {
   "/space": "Space",
   "/editor": "Editor",
   "/crow-ai": "CrowAI",
-  "/swipe-files": "Swipe files",
+  "/swipe-files": "Gerador",
   "/drive": "Drive",
   "/aulas": "Aulas",
   "/usage": "Usage",
