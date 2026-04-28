@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
 import { Button } from "@/components/ui/button";
@@ -42,12 +41,12 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3">
           <EdisLogo variant="mark" size={40} />
-          <span className="edis-tag">Login</span>
+          <span className="edis-tag">Entrar</span>
           <h1
             className="font-display text-[28px] font-medium leading-[1.1] tracking-tight text-foreground"
             style={{ letterSpacing: "-0.03em" }}
           >
-            Welcome back.
+            Bem-vindo de volta.
           </h1>
         </div>
 
@@ -59,12 +58,12 @@ export default function LoginPage() {
                   htmlFor="email"
                   className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-edis-text-4"
                 >
-                  Email
+                  E-mail
                 </label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="voce@exemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -76,7 +75,7 @@ export default function LoginPage() {
                   htmlFor="password"
                   className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-edis-text-4"
                 >
-                  Password
+                  Senha
                 </label>
                 <Input
                   id="password"
@@ -100,22 +99,12 @@ export default function LoginPage() {
                 disabled={loading}
                 className="mt-2 h-10 w-full gap-2 bg-primary text-primary-foreground hover:bg-[#33eb8c] disabled:opacity-60"
               >
-                {loading ? "Signing in…" : "Sign in"}
+                {loading ? "Entrando…" : "Entrar"}
                 {!loading && <Icon icon={ArrowRight01Icon} size={16} strokeWidth={2} />}
               </Button>
             </form>
           </CardContent>
         </Card>
-
-        <p className="mt-6 text-center text-[13px] text-edis-text-3">
-          New to EDIS?{" "}
-          <Link
-            href="/signup"
-            className="font-medium text-foreground underline-offset-4 hover:underline"
-          >
-            Create an account
-          </Link>
-        </p>
       </div>
     </div>
   );
