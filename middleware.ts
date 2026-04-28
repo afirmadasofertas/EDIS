@@ -10,9 +10,24 @@ export async function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   });
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Without Supabase env vars the auth gate cannot run. Skip it (let the
+  // request through) instead of crashing the entire site with
+  // MIDDLEWARE_INVOCATION_FAILED. The dashboard layout still hard-blocks
+  // unauthenticated access on the server, so this is safe.
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn(
+      "[middleware] Supabase env vars missing — skipping auth gate. " +
+        "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    );
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {
