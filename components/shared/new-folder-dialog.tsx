@@ -51,18 +51,27 @@ const YEARS = ["2024", "2025", "2026", "2027"];
 
 interface NewFolderDialogProps {
   trigger: ReactNode;
+  onCreate?: (folder: {
+    name: string;
+    month: string;
+    year: number;
+    description?: string;
+    files: File[];
+  }) => Promise<void> | void;
 }
 
-export function NewFolderDialog({ trigger }: NewFolderDialogProps) {
+export function NewFolderDialog({ trigger, onCreate }: NewFolderDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [month, setMonth] = useState<string>("Abril");
   const [year, setYear] = useState<string>("2026");
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const canSubmit = name.trim().length > 0 && !!month && !!year;
+  const canSubmit = name.trim().length > 0 && !!month && !!year && !submitting;
 
   function resetForm() {
     setName("");
@@ -73,14 +82,26 @@ export function NewFolderDialog({ trigger }: NewFolderDialogProps) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!canSubmit) return;
-    // TODO: wire to backend.
-    // eslint-disable-next-line no-console
-    console.log("[new-folder]", { name, month, year, description, files });
-    resetForm();
-    setOpen(false);
+    setSubmitting(true);
+    setError(null);
+    try {
+      await onCreate?.({
+        name: name.trim(),
+        month,
+        year: Number(year),
+        description: description.trim() || undefined,
+        files,
+      });
+      resetForm();
+      setOpen(false);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function handleFilesPicked(list: FileList | null) {
@@ -271,25 +292,35 @@ export function NewFolderDialog({ trigger }: NewFolderDialogProps) {
               Override shadcn defaults: `-mx-4 -mb-4 bg-muted/50 rounded-b-xl`
               are designed for DialogContent's default `p-4`. We use `p-0` on
               the content so we reset margins and reuse the card bg + rounded. */}
-          <DialogFooter className="m-0 flex-row justify-end gap-2 rounded-b-xl border-t border-border bg-card px-5 py-3 sm:justify-end">
-            <DialogClose asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-9 border-edis-line-2 bg-transparent text-[13px] text-edis-text-2 hover:bg-edis-ink-3 hover:text-foreground"
-              >
-                Cancelar
-              </Button>
-            </DialogClose>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={!canSubmit}
-              className="h-9 bg-primary text-[13px] font-medium text-primary-foreground hover:bg-[#33eb8c] disabled:opacity-50"
+          <DialogFooter className="m-0 flex-row items-center justify-between gap-2 rounded-b-xl border-t border-border bg-card px-5 py-3 sm:justify-between">
+            <p
+              className={cn(
+                "text-[12px] text-red-400",
+                error ? "block" : "hidden"
+              )}
             >
-              Criar pasta
-            </Button>
+              {error}
+            </p>
+            <div className="ml-auto flex items-center gap-2">
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 border-edis-line-2 bg-transparent text-[13px] text-edis-text-2 hover:bg-edis-ink-3 hover:text-foreground"
+                >
+                  Cancelar
+                </Button>
+              </DialogClose>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!canSubmit}
+                className="h-9 bg-primary text-[13px] font-medium text-primary-foreground hover:bg-[#33eb8c] disabled:opacity-50"
+              >
+                {submitting ? "Criando…" : "Criar pasta"}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

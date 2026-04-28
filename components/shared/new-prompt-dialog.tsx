@@ -27,17 +27,26 @@ import { Icon } from "@/components/icon";
 
 interface NewPromptDialogProps {
   trigger: ReactNode;
+  onCreate?: (data: {
+    title: string;
+    prompt: string;
+    description?: string;
+    files: File[];
+  }) => Promise<void> | void;
 }
 
-export function NewPromptDialog({ trigger }: NewPromptDialogProps) {
+export function NewPromptDialog({ trigger, onCreate }: NewPromptDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const canSubmit = title.trim().length > 0 && prompt.trim().length > 0;
+  const canSubmit =
+    title.trim().length > 0 && prompt.trim().length > 0 && !submitting;
 
   function resetForm() {
     setTitle("");
@@ -47,14 +56,25 @@ export function NewPromptDialog({ trigger }: NewPromptDialogProps) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!canSubmit) return;
-    // TODO: wire to backend.
-    // eslint-disable-next-line no-console
-    console.log("[new-prompt]", { title, prompt, description, files });
-    resetForm();
-    setOpen(false);
+    setSubmitting(true);
+    setError(null);
+    try {
+      await onCreate?.({
+        title: title.trim(),
+        prompt: prompt.trim(),
+        description: description.trim() || undefined,
+        files,
+      });
+      resetForm();
+      setOpen(false);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function handleFilesPicked(list: FileList | null) {
@@ -229,29 +249,36 @@ export function NewPromptDialog({ trigger }: NewPromptDialogProps) {
             </div>
           </div>
 
-          <DialogFooter className="m-0 flex-row justify-end gap-2 rounded-b-xl border-t border-border bg-card px-5 py-3 sm:justify-end">
-            <DialogClose asChild>
+          <DialogFooter className="m-0 flex-row items-center justify-between gap-2 rounded-b-xl border-t border-border bg-card px-5 py-3 sm:justify-between">
+            {error ? (
+              <p className="text-[12px] text-red-400">{error}</p>
+            ) : (
+              <span />
+            )}
+            <div className="ml-auto flex items-center gap-2">
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 border-edis-line-2 bg-transparent text-[13px] text-edis-text-2 hover:bg-edis-ink-3 hover:text-foreground"
+                >
+                  Cancelar
+                </Button>
+              </DialogClose>
               <Button
-                type="button"
-                variant="outline"
+                type="submit"
                 size="sm"
-                className="h-9 border-edis-line-2 bg-transparent text-[13px] text-edis-text-2 hover:bg-edis-ink-3 hover:text-foreground"
+                disabled={!canSubmit}
+                className="
+                  h-9 rounded-md bg-primary px-3.5 text-[13px] font-medium
+                  text-primary-foreground hover:bg-[#33eb8c]
+                  disabled:pointer-events-none disabled:opacity-50
+                "
               >
-                Cancelar
+                {submitting ? "Salvando…" : "Salvar prompt"}
               </Button>
-            </DialogClose>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={!canSubmit}
-              className="
-                h-9 rounded-md bg-primary px-3.5 text-[13px] font-medium
-                text-primary-foreground hover:bg-[#33eb8c]
-                disabled:pointer-events-none disabled:opacity-50
-              "
-            >
-              Salvar prompt
-            </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
