@@ -1,13 +1,18 @@
-import { Image02Icon } from "@hugeicons/core-free-icons";
-import { PlaceholderPage } from "@/components/shared/placeholder-page";
+"use client";
+
+import { EditorProvider } from "./_state";
+import { LeftPanel } from "./_left-panel";
+import { CenterPreview } from "./_preview";
+import { GalleryPanel } from "./_gallery";
 
 export default function EditorPage() {
   return (
-    <PlaceholderPage
-      eyebrow="Editor"
-      title="Templates validados, prontos pra girar."
-      description="Escolha um template, solte logo e copy, exporte. Zero fricção — o trabalho pesado já está feito."
-      icon={Image02Icon}
-    />
+    <EditorProvider>
+      <div className="flex h-[calc(100vh-3.5rem)] w-full">
+        <LeftPanel />
+        <CenterPreview />
+        <GalleryPanel />
+      </div>
+    </EditorProvider>
   );
 }
