@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LogoutSquare02Icon,
   UserIcon,
@@ -9,6 +9,8 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { Icon } from "@/components/icon";
+import { useUser } from "@/components/providers/user-provider";
+import { createClient } from "@/lib/supabase/client";
 
 import {
   Sidebar,
@@ -36,8 +38,31 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { EdisLogo } from "./edis-logo";
 import { NAV_GROUPS } from "./nav-items";
 
+function getInitials(name?: string | null, email?: string | null): string {
+  if (name) {
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  if (email) return email.slice(0, 2).toUpperCase();
+  return "??";
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const user = useUser();
+
+  const fullName = user?.user_metadata?.full_name as string | undefined;
+  const email = user?.email;
+  const initials = getInitials(fullName, email);
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <Sidebar
@@ -63,13 +88,11 @@ export function AppSidebar() {
             group-data-[collapsible=icon]:px-0
           "
         >
-          {/* Lockup (raven + EDIS wordmark) — expanded state. */}
           <EdisLogo
             variant="lockup"
             size={26}
             className="group-data-[collapsible=icon]:hidden"
           />
-          {/* Mark-only (inline SVG — sparkles twinkle on hover). */}
           <EdisLogo
             variant="mark"
             size={22}
@@ -146,15 +169,15 @@ export function AppSidebar() {
                 >
                   <Avatar className="size-8 rounded-md border border-sidebar-border">
                     <AvatarFallback className="rounded-md bg-edis-ink-3 font-mono text-[11px] font-medium text-edis-text-1">
-                      MV
+                      {initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-1 flex-col overflow-hidden text-left group-data-[collapsible=icon]:hidden">
                     <span className="truncate text-[13px] font-medium text-sidebar-foreground">
-                      Marcos Viana
+                      {fullName ?? email ?? "User"}
                     </span>
                     <span className="truncate font-mono text-[10.5px] text-edis-text-4">
-                      marcos@edis.app
+                      {email ?? ""}
                     </span>
                   </div>
                 </SidebarMenuButton>
@@ -168,16 +191,23 @@ export function AppSidebar() {
                   User
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 text-[13px]">
-                  <Icon icon={UserIcon} size={16} />
-                  Profile
+                <DropdownMenuItem asChild className="gap-2 text-[13px]">
+                  <Link href="/settings">
+                    <Icon icon={UserIcon} size={16} />
+                    Profile
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 text-[13px]">
-                  <Icon icon={CreditCardIcon} size={16} />
-                  Billing
+                <DropdownMenuItem asChild className="gap-2 text-[13px]">
+                  <Link href="/usage">
+                    <Icon icon={CreditCardIcon} size={16} />
+                    Billing
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 text-[13px] text-edis-text-2">
+                <DropdownMenuItem
+                  className="gap-2 text-[13px] text-edis-text-2"
+                  onClick={handleLogout}
+                >
                   <Icon icon={LogoutSquare02Icon} size={16} />
                   Log out
                 </DropdownMenuItem>

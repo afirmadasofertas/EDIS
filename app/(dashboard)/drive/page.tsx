@@ -9,10 +9,6 @@ import { NewFolderDialog } from "@/components/shared/new-folder-dialog";
 import { NewPromptDialog } from "@/components/shared/new-prompt-dialog";
 import { DriveBrowser, type LibraryMode } from "./_browser";
 import { NotificationsButton } from "./_notifications-button";
-import {
-  SAMPLE_FOLDERS,
-  SAMPLE_PROMPTS,
-} from "./_data";
 
 export default function DrivePage() {
   const [mode, setMode] = useState<LibraryMode>("creatives");
@@ -57,8 +53,8 @@ export default function DrivePage() {
 
       {/* Interactive browser — search / filters / view toggle / results */}
       <DriveBrowser
-        folders={SAMPLE_FOLDERS}
-        prompts={SAMPLE_PROMPTS}
+        folders={[]}
+        prompts={[]}
         mode={mode}
         onModeChange={setMode}
       />
