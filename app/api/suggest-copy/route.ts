@@ -61,6 +61,10 @@ export async function POST(req: Request) {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
         responseMimeType: "application/json",
+        // Cap thinking so the JSON response actually fits in the token
+        // budget instead of being eaten by hidden chain-of-thought.
+        thinkingConfig: { thinkingBudget: 1024 },
+        maxOutputTokens: 4096,
         responseSchema: {
           type: "object",
           properties: {

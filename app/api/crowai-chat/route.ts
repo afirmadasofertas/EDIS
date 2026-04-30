@@ -77,9 +77,14 @@ export async function POST(req: Request) {
       contents,
       generationConfig: {
         temperature: 0.9,
-        // Bumped from 2k to 8k — long-form body copy + multi-headline
-        // replies were getting truncated mid-paragraph at 2k.
+        // Generous output budget so long body copy + multi-headline
+        // replies don't get truncated mid-paragraph.
         maxOutputTokens: 8192,
+        // gemini-3 pro has thinking ON by default and will spend the
+        // ENTIRE token budget reasoning before emitting text. Cap it so
+        // there's actual room left for the reply. 1024 of thinking is
+        // plenty for chat-style copy questions.
+        thinkingConfig: { thinkingBudget: 1024 },
       },
     }),
   });

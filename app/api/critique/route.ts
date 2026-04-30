@@ -84,6 +84,9 @@ export async function POST(req: Request) {
       ],
       generationConfig: {
         responseMimeType: "application/json",
+        // Critique benefits from a bit more reasoning (visual analysis).
+        thinkingConfig: { thinkingBudget: 2048 },
+        maxOutputTokens: 4096,
         responseSchema: {
           type: "object",
           properties: {
