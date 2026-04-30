@@ -46,6 +46,7 @@ export function FilePreviewDialog({
   onDownload,
   annotationsEnabled = true,
   author = "Você",
+  initialActivePinId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -59,6 +60,8 @@ export function FilePreviewDialog({
   annotationsEnabled?: boolean;
   /** Author name attached to new annotations (e.g. "Você" vs "Cliente"). */
   author?: string;
+  /** Pin to auto-focus when the dialog opens (deep-link from notifications). */
+  initialActivePinId?: string;
 }) {
   const [annotateMode, setAnnotateMode] = useState(false);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
@@ -75,31 +78,40 @@ export function FilePreviewDialog({
       setAnnotateMode(false);
       return;
     }
-    setAnnotations(getAnnotations(fileId));
-    setActivePinId(null);
-  }, [open, fileId]);
+    let cancelled = false;
+    (async () => {
+      const data = await getAnnotations(fileId);
+      if (cancelled) return;
+      setAnnotations(data);
+      // Deep-link: auto-focus the pin that triggered the navigation, if any.
+      setActivePinId(initialActivePinId ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, fileId, initialActivePinId]);
 
-  function handleAddAnnotation(x: number, y: number) {
+  async function handleAddAnnotation(x: number, y: number) {
     if (!fileId) return;
-    const created = addAnnotation(fileId, x, y, author);
+    const created = await addAnnotation(fileId, x, y, author);
     setAnnotations((prev) => [...prev, created]);
     setActivePinId(created.id);
   }
-  function handleSaveNote(id: string, note: string) {
-    updateAnnotation(id, note);
+  async function handleSaveNote(id: string, note: string) {
+    await updateAnnotation(id, note);
     setAnnotations((prev) =>
       prev.map((a) =>
         a.id === id ? { ...a, note, updatedAt: Date.now() } : a
       )
     );
   }
-  function handleDelete(id: string) {
-    deleteAnnotation(id);
+  async function handleDelete(id: string) {
+    await deleteAnnotation(id);
     setAnnotations((prev) => prev.filter((a) => a.id !== id));
     setActivePinId((pid) => (pid === id ? null : pid));
   }
-  function handleMove(id: string, x: number, y: number) {
-    moveAnnotation(id, x, y);
+  async function handleMove(id: string, x: number, y: number) {
+    await moveAnnotation(id, x, y);
     setAnnotations((prev) =>
       prev.map((a) =>
         a.id === id ? { ...a, x, y, updatedAt: Date.now() } : a

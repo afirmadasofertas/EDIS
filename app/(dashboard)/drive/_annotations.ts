@@ -1,15 +1,15 @@
 /**
- * Mock annotation store. One entry per file-pin. Backed by localStorage so
- * annotations persist across reloads within the same browser. Swap for real
- * backend (WebSocket channel per file + auth-aware authorship) when it ships.
+ * Annotation store — backed by public.drive_annotations in Supabase.
+ * Owner-RLS handles authoring on their own folders; the public share
+ * page authors as 'Cliente' via the public INSERT policy.
  */
 
-const STORAGE_KEY = "edis-file-annotations";
+import { createClient } from "@/lib/supabase/client";
 
 export type Annotation = {
   id: string;
   fileId: string;
-  /** Relative coordinates 0..1 (so pins stay anchored when image resizes). */
+  /** Relative coordinates 0..1 (so pins stay anchored when the image scales). */
   x: number;
   y: number;
   note: string;
@@ -18,88 +18,99 @@ export type Annotation = {
   updatedAt: number;
 };
 
-function safeParse(raw: string | null): Record<string, Annotation> {
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw);
-    return typeof parsed === "object" && parsed !== null ? parsed : {};
-  } catch {
-    return {};
-  }
-}
+type Row = {
+  id: string;
+  file_id: string;
+  x: number;
+  y: number;
+  note: string;
+  author: string;
+  created_at: string;
+  updated_at: string;
+};
 
-function loadAll(): Record<string, Annotation> {
-  if (typeof window === "undefined") return {};
-  return safeParse(window.localStorage.getItem(STORAGE_KEY));
-}
-
-function saveAll(all: Record<string, Annotation>) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+function rowToAnnotation(r: Row): Annotation {
+  return {
+    id: r.id,
+    fileId: r.file_id,
+    x: r.x,
+    y: r.y,
+    note: r.note,
+    author: r.author,
+    createdAt: Date.parse(r.created_at),
+    updatedAt: Date.parse(r.updated_at),
+  };
 }
 
 function newId(): string {
-  return Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 6);
+  return (
+    Math.random().toString(36).slice(2, 6) +
+    Math.random().toString(36).slice(2, 6)
+  );
 }
 
-/**
- * Returns the annotations for a file, sorted by creation time. The numeric
- * label shown on each pin is just its index in this sorted array + 1.
- */
-export function getAnnotations(fileId: string): Annotation[] {
-  const all = loadAll();
-  return Object.values(all)
-    .filter((a) => a.fileId === fileId)
-    .sort((a, b) => a.createdAt - b.createdAt);
+/** Returns the annotations for a file, sorted by creation time. */
+export async function getAnnotations(fileId: string): Promise<Annotation[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("drive_annotations")
+    .select("id, file_id, x, y, note, author, created_at, updated_at")
+    .eq("file_id", fileId)
+    .order("created_at", { ascending: true });
+  return (data ?? []).map((r) => rowToAnnotation(r as Row));
 }
 
-export function addAnnotation(
+export async function addAnnotation(
   fileId: string,
   x: number,
   y: number,
   author = "Você"
-): Annotation {
-  const now = Date.now();
-  const ann: Annotation = {
-    id: newId(),
-    fileId,
-    x,
-    y,
-    note: "",
-    author,
-    createdAt: now,
-    updatedAt: now,
-  };
-  const all = loadAll();
-  all[ann.id] = ann;
-  saveAll(all);
-  return ann;
+): Promise<Annotation> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("drive_annotations")
+    .insert({
+      id: newId(),
+      file_id: fileId,
+      x,
+      y,
+      author,
+      note: "",
+    })
+    .select("id, file_id, x, y, note, author, created_at, updated_at")
+    .single();
+  if (error) throw new Error(error.message);
+  return rowToAnnotation(data as Row);
 }
 
-export function updateAnnotation(id: string, note: string) {
-  const all = loadAll();
-  const ann = all[id];
-  if (!ann) return;
-  ann.note = note;
-  ann.updatedAt = Date.now();
-  saveAll(all);
+export async function updateAnnotation(id: string, note: string): Promise<void> {
+  const supabase = createClient();
+  await supabase
+    .from("drive_annotations")
+    .update({ note, updated_at: new Date().toISOString() })
+    .eq("id", id);
 }
 
 /** Reposition an existing pin. Coordinates are relative (0..1). */
-export function moveAnnotation(id: string, x: number, y: number) {
-  const all = loadAll();
-  const ann = all[id];
-  if (!ann) return;
-  ann.x = Math.max(0, Math.min(1, x));
-  ann.y = Math.max(0, Math.min(1, y));
-  ann.updatedAt = Date.now();
-  saveAll(all);
+export async function moveAnnotation(
+  id: string,
+  x: number,
+  y: number
+): Promise<void> {
+  const supabase = createClient();
+  await supabase
+    .from("drive_annotations")
+    .update({
+      x: Math.max(0, Math.min(1, x)),
+      y: Math.max(0, Math.min(1, y)),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
 }
 
-export function deleteAnnotation(id: string) {
-  const all = loadAll();
-  delete all[id];
-  saveAll(all);
+export async function deleteAnnotation(id: string): Promise<void> {
+  const supabase = createClient();
+  await supabase.from("drive_annotations").delete().eq("id", id);
 }
 
 /** Format "agora" / "2m atrás" / "1h atrás" / "3d atrás" / date string. */

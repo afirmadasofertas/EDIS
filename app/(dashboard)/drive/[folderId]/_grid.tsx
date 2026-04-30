@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DashboardSquare02Icon,
   ParagraphBulletsPoint01Icon,
@@ -22,14 +22,40 @@ interface FilesGridProps {
   onRename: (id: string, newName: string) => Promise<void> | void;
   onDelete: (id: string) => Promise<void> | void;
   onDownload: (file: DriveFile) => Promise<void> | void;
+  /** Deep-link: open this file's preview as soon as it shows up in `files`. */
+  autoOpenFileId?: string;
+  /** Deep-link: when the preview opens, focus this annotation pin. */
+  autoOpenPinId?: string;
+  /** Fired once the auto-open has been honored, so the URL can be cleaned. */
+  onAutoOpenHandled?: () => void;
 }
 
 type DialogKind = "preview" | "rename" | "delete";
 
-export function FilesGrid({ files, onRename, onDelete, onDownload }: FilesGridProps) {
+export function FilesGrid({
+  files,
+  onRename,
+  onDelete,
+  onDownload,
+  autoOpenFileId,
+  autoOpenPinId,
+  onAutoOpenHandled,
+}: FilesGridProps) {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [activeFile, setActiveFile] = useState<DriveFile | null>(null);
   const [activeDialog, setActiveDialog] = useState<DialogKind | null>(null);
+  const [initialPinId, setInitialPinId] = useState<string | undefined>(undefined);
+
+  // Honor the deep-link the moment the requested file lands in `files`.
+  useEffect(() => {
+    if (!autoOpenFileId || activeDialog === "preview") return;
+    const target = files.find((f) => f.id === autoOpenFileId);
+    if (!target) return;
+    setActiveFile(target);
+    setInitialPinId(autoOpenPinId);
+    setActiveDialog("preview");
+    onAutoOpenHandled?.();
+  }, [autoOpenFileId, autoOpenPinId, files, activeDialog, onAutoOpenHandled]);
 
   function openDialog(file: DriveFile, kind: DialogKind) {
     setActiveFile(file);
@@ -115,6 +141,7 @@ export function FilesGrid({ files, onRename, onDelete, onDownload }: FilesGridPr
             thumbnailUrl={activeFile.thumbnailUrl}
             kind={activeFile.kind}
             onDownload={() => onDownload(activeFile)}
+            initialActivePinId={initialPinId}
           />
           <RenameFileDialog
             open={activeDialog === "rename"}

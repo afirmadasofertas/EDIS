@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft02Icon,
   Delete02Icon,
@@ -29,7 +29,19 @@ type PageProps = {
 
 export default function FolderDetailPage({ params }: PageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { folderId } = use(params);
+
+  // Deep-link from notifications: /drive/<folderId>?file=<id>&pin=<id>
+  // We capture these once on mount and clear the URL after FilesGrid honors
+  // them so a manual close doesn't keep re-opening the dialog.
+  const [autoOpen, setAutoOpen] = useState<{
+    fileId?: string;
+    pinId?: string;
+  }>(() => ({
+    fileId: searchParams?.get("file") ?? undefined,
+    pinId: searchParams?.get("pin") ?? undefined,
+  }));
 
   const [folder, setFolder] = useState<DriveFolder | null>(null);
   const [files, setFiles] = useState<DriveFile[]>([]);
@@ -326,6 +338,13 @@ export default function FolderDetailPage({ params }: PageProps) {
         onRename={handleRenameFile}
         onDelete={handleDeleteFile}
         onDownload={handleDownloadFile}
+        autoOpenFileId={autoOpen.fileId}
+        autoOpenPinId={autoOpen.pinId}
+        onAutoOpenHandled={() => {
+          setAutoOpen({});
+          // Clean the URL once the dialog is up so refresh doesn't loop.
+          router.replace(`/drive/${folder.id}`, { scroll: false });
+        }}
       />
 
       <EditFolderDialog

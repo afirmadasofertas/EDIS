@@ -15,7 +15,6 @@ import {
   listNotifications,
   markAllAsRead,
   markAsRead,
-  unreadCount,
   type Notification,
 } from "./_notifications";
 import { formatRelative } from "./_annotations";
@@ -31,26 +30,19 @@ export function NotificationsButton() {
   const [unread, setUnread] = useState(0);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const refresh = useCallback(() => {
-    const next = listNotifications();
+  const refresh = useCallback(async () => {
+    const next = await listNotifications();
     setItems(next);
     setUnread(next.filter((n) => !n.read).length);
   }, []);
 
-  // Refresh on mount, whenever the popover opens, and when storage changes
-  // from another tab (e.g. public share page commits a comment).
+  // Initial fetch + light polling so the bell picks up new comments left
+  // by clients on the public share page. Polling is cheap (single SELECT
+  // joined with embedded folders) and only runs while the page is open.
   useEffect(() => {
     refresh();
-    function onStorage(e: StorageEvent) {
-      if (
-        e.key === "edis-file-annotations" ||
-        e.key === "edis-notifications-read"
-      ) {
-        refresh();
-      }
-    }
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    const id = window.setInterval(refresh, 30_000);
+    return () => window.clearInterval(id);
   }, [refresh]);
 
   useEffect(() => {
@@ -74,14 +66,14 @@ export function NotificationsButton() {
     return () => window.clearInterval(id);
   }, [open]);
 
-  function handleItemClick(n: Notification) {
-    markAsRead(n.annotation.id);
+  async function handleItemClick(n: Notification) {
+    await markAsRead(n.annotationId);
     setOpen(false);
     refresh();
   }
 
-  function handleMarkAllRead() {
-    markAllAsRead();
+  async function handleMarkAllRead() {
+    await markAllAsRead();
     refresh();
   }
 
@@ -188,9 +180,12 @@ export function NotificationsButton() {
             ) : (
               <ul className="flex flex-col">
                 {items.map((n) => (
-                  <li key={n.annotation.id}>
+                  <li key={n.annotationId}>
                     <Link
-                      href={`/drive/${n.folder.id}`}
+                      // Deep-link: open the folder and immediately auto-open
+                      // the file preview at the pin that triggered this
+                      // notification.
+                      href={`/drive/${n.folderId}?file=${n.fileId}&pin=${n.annotationId}`}
                       onClick={() => handleItemClick(n)}
                       className={cn(
                         "flex gap-2.5 border-b border-border px-4 py-3 transition-colors last:border-b-0",
@@ -199,7 +194,6 @@ export function NotificationsButton() {
                           : "bg-primary/[0.04] hover:bg-primary/[0.08]"
                       )}
                     >
-                      {/* Unread indicator */}
                       <span
                         className={cn(
                           "mt-1.5 size-1.5 shrink-0 rounded-full",
@@ -210,23 +204,23 @@ export function NotificationsButton() {
                       <div className="flex min-w-0 flex-1 flex-col gap-1">
                         <div className="flex items-center gap-1.5">
                           <span className="text-[12.5px] font-medium text-foreground">
-                            {n.annotation.author}
+                            {n.author}
                           </span>
                           <span className="font-mono text-[10px] text-edis-text-4">
-                            · {formatRelative(n.annotation.updatedAt)}
+                            · {formatRelative(n.updatedAt)}
                           </span>
                         </div>
                         <p className="line-clamp-2 text-[12px] leading-[1.4] text-edis-text-2">
-                          {n.annotation.note || (
+                          {n.note || (
                             <span className="italic text-edis-text-4">
                               (sem texto)
                             </span>
                           )}
                         </p>
                         <div className="flex items-center gap-1 font-mono text-[10px] text-edis-text-4">
-                          <span className="truncate">{n.file.name}</span>
+                          <span className="truncate">{n.fileName}</span>
                           <span>·</span>
-                          <span className="truncate">{n.folder.name}</span>
+                          <span className="truncate">{n.folderName}</span>
                         </div>
                       </div>
                     </Link>
