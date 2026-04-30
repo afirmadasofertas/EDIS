@@ -139,20 +139,26 @@ export async function POST(req: Request) {
         }
       }
 
+      // Gemini's SSE stream uses CRLF line endings (\r\n\r\n between
+      // frames). A naive split("\n\n") never matches and the entire
+      // payload sits in one undivided buffer chunk, producing zero
+      // emitted text. Splitting on /\r?\n\r?\n/ handles both CRLF and
+      // LF separators.
+      const FRAME_SEP = /\r?\n\r?\n/;
+
       try {
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
 
-          const frames = buffer.split("\n\n");
+          const frames = buffer.split(FRAME_SEP);
           buffer = frames.pop() ?? "";
           for (const frame of frames) processFrame(frame);
         }
 
-        // Flush whatever's left after the stream closes — Gemini's last
-        // frame frequently arrives without a trailing blank line, and
-        // skipping it was the source of the "finishReason=unknown" tail.
+        // Flush whatever's left after the stream closes — last frame
+        // frequently arrives without a trailing blank line.
         buffer += decoder.decode();
         const tail = buffer.trim();
         if (tail.length > 0) processFrame(tail);
