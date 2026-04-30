@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Add01Icon,
   AlignBottomIcon,
@@ -23,7 +23,6 @@ import {
   UserIcon,
   AspectRatioIcon,
   MagicWand01Icon,
-  SparklesIcon,
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 
@@ -33,7 +32,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { fileToBase64, useEditor } from "./_state";
 import { FontPicker } from "./_font-picker";
-import { loadFont } from "./_fonts";
 import { ColorSwatch } from "./_color-picker";
 import type {
   Alignment,
@@ -174,28 +172,16 @@ export function LeftPanel() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <section className="flex flex-col gap-1.5 border-b border-edis-line-1 px-4 py-3">
-          <DirectionCard
-            active={state.mode === "editorial"}
-            label="Editorial"
-            mood="Foto premium magazine. Sujeito hero, fundo desfocado, color grade restrained, naturalístico."
-            palette={["#0a0a0a", "#fafafa", "#a08060", "#7a7a7a", "#d4af37"]}
-            displayFont="Playfair Display"
-            bodyFont="Inter"
-            refs={["Vogue", "Monocle", "Vanity Fair"]}
-            onClick={() => patch("mode", "editorial" as never)}
+        <Section icon={MagicWand01Icon} label="Tipo de geração">
+          <ButtonRow
+            options={[
+              { id: "editorial", label: "Sério" },
+              { id: "campaign", label: "Criativo" },
+            ]}
+            value={state.mode}
+            onChange={(v) => patch("mode", v as never)}
           />
-          <DirectionCard
-            active={state.mode === "campaign"}
-            label="Campanha"
-            mood="Poster cinematográfico, CGI integrado, theatrical lighting, color grade pesado, impacto."
-            palette={["#0a0a0a", "#7c3aed", "#f59e0b", "#22d3ee", "#ec4899"]}
-            displayFont="Bricolage Grotesque"
-            bodyFont="Manrope"
-            refs={["Design Builder", "GolBet", "Movie posters"]}
-            onClick={() => patch("mode", "campaign" as never)}
-          />
-        </section>
+        </Section>
 
         <Section icon={Edit03Icon} label="Nicho">
           <Input
@@ -690,106 +676,4 @@ function CopyField({
   );
 }
 
-/**
- * Rich direction picker card. Shows the user, in one glance, what each mode
- * actually produces — palette swatches, display+body font samples, mood
- * blurb, and real-world references — so they don't have to guess from a
- * 2-word label.
- *
- * Pattern adapted from open-design's QuestionForm DirectionCardView, scoped
- * to our editor's MODE state (editorial vs campaign for now).
- */
-function DirectionCard({
-  active,
-  label,
-  mood,
-  palette,
-  displayFont,
-  bodyFont,
-  refs,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  mood: string;
-  palette: string[];
-  displayFont: string;
-  bodyFont: string;
-  refs: string[];
-  onClick: () => void;
-}) {
-  // Preload the preview fonts so the live samples render in their actual face.
-  useEffect(() => {
-    loadFont(displayFont);
-    loadFont(bodyFont);
-  }, [displayFont, bodyFont]);
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex flex-col gap-2 rounded-md border p-3 text-left transition-all",
-        active
-          ? "border-edis-mint bg-edis-mint/5 shadow-[0_0_0_1px_rgba(0,229,115,0.15)]"
-          : "border-edis-line-2 bg-edis-ink-2 hover:border-edis-line-3"
-      )}
-    >
-      {/* Header — label + selected pill */}
-      <div className="flex items-center justify-between gap-2">
-        <span
-          className={cn(
-            "text-[12.5px] font-medium",
-            active ? "text-foreground" : "text-edis-text-2"
-          )}
-        >
-          {label}
-        </span>
-        {active && (
-          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-edis-mint">
-            ✓ Selecionado
-          </span>
-        )}
-      </div>
-
-      {/* Palette + type sample row */}
-      <div className="flex items-center gap-2">
-        <div className="flex gap-0.5">
-          {palette.slice(0, 5).map((c, i) => (
-            <span
-              key={i}
-              className="size-4 rounded-sm border border-black/30"
-              style={{ backgroundColor: c }}
-              aria-hidden
-            />
-          ))}
-        </div>
-        <span className="ml-auto flex items-baseline gap-1.5">
-          <span
-            className="text-[18px] leading-none text-foreground"
-            style={{ fontFamily: `"${displayFont}", serif` }}
-          >
-            Aa
-          </span>
-          <span
-            className="text-[10.5px] text-edis-text-3"
-            style={{ fontFamily: `"${bodyFont}", sans-serif` }}
-          >
-            Sample text
-          </span>
-        </span>
-      </div>
-
-      {/* Mood blurb */}
-      <p className="line-clamp-2 text-[11px] leading-snug text-edis-text-3">
-        {mood}
-      </p>
-
-      {/* Refs row */}
-      <p className="font-mono text-[9.5px] uppercase tracking-[0.1em] text-edis-text-4">
-        Refs · {refs.join(" · ")}
-      </p>
-    </button>
-  );
-}
 

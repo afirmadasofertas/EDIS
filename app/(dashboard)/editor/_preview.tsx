@@ -221,7 +221,18 @@ export function CenterPreview() {
             className="relative grid place-items-center overflow-hidden rounded-lg border border-edis-line-2 bg-edis-ink-1 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.7)]"
             style={{ width: dims.w, height: dims.h, aspectRatio: aspect }}
           >
-            {latestImage ? (
+            {/* Generating takes priority over the existing image — when the
+                user re-generates, we show the loading state instead of the
+                previous result so it's clear something new is in flight. */}
+            {generating ? (
+              <div className="edis-raven-loop relative grid place-items-center">
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 -m-8 animate-pulse rounded-full bg-edis-mint/20 blur-2xl"
+                />
+                <EdisLogo variant="mark" size={Math.min(dims.w, dims.h) * 0.18} />
+              </div>
+            ) : latestImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={latestImage}
@@ -229,19 +240,7 @@ export function CenterPreview() {
                 className="absolute inset-0 size-full object-cover"
               />
             ) : (
-              <div
-                className={
-                  generating
-                    ? "edis-raven-loop relative grid place-items-center"
-                    : "group/edis-logo relative grid place-items-center"
-                }
-              >
-                {generating && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 -m-8 animate-pulse rounded-full bg-edis-mint/20 blur-2xl"
-                  />
-                )}
+              <div className="group/edis-logo relative grid place-items-center">
                 <EdisLogo variant="mark" size={Math.min(dims.w, dims.h) * 0.18} />
               </div>
             )}
