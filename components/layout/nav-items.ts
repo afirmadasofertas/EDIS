@@ -1,7 +1,6 @@
 import type { IconSvgElement } from "@hugeicons/react";
 import {
   DashboardSquare01Icon,
-  OrthogonalEdgeIcon,
   Image02Icon,
   SaturnIcon,
   MagicWand01Icon,
@@ -9,6 +8,7 @@ import {
   Mortarboard02Icon,
   Coins01Icon,
   Settings01Icon,
+  GlobalSearchIcon,
 } from "@hugeicons/core-free-icons";
 
 // Hugeicons exports icon data (readonly SVG path arrays), not React components.
@@ -32,7 +32,6 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Workspace",
     items: [
       { href: "/dashboard", label: "Dashboard", icon: DashboardSquare01Icon },
-      { href: "/space", label: "Space", icon: OrthogonalEdgeIcon, badge: "BETA" },
       { href: "/editor", label: "Editor", icon: Image02Icon },
       { href: "/crow-ai", label: "CrowAI", icon: SaturnIcon },
     ],
@@ -42,6 +41,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/swipe-files", label: "Gerador", icon: MagicWand01Icon },
       { href: "/drive", label: "Drive", icon: HardDriveIcon },
+      { href: "/referencias", label: "Referências", icon: GlobalSearchIcon },
       { href: "/aulas", label: "Aulas", icon: Mortarboard02Icon },
     ],
   },
@@ -72,11 +72,11 @@ export function getGroupForPath(pathname: string | null): string {
 
 export const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
-  "/space": "Space",
   "/editor": "Editor",
   "/crow-ai": "CrowAI",
   "/swipe-files": "Gerador",
   "/drive": "Drive",
+  "/referencias": "Referências",
   "/aulas": "Aulas",
   "/usage": "Usage",
   "/settings": "Configurações",

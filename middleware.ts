@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/aulas") ||
     pathname.startsWith("/swipe-files") ||
     pathname.startsWith("/editor") ||
-    pathname.startsWith("/space") ||
+    pathname.startsWith("/referencias") ||
     pathname.startsWith("/crow-ai") ||
     pathname.startsWith("/usage") ||
     pathname.startsWith("/settings");
