@@ -112,6 +112,32 @@ export async function POST(req: Request) {
       let buffer = "";
       let receivedAny = false;
       let finishReason: string | null = null;
+
+      function processFrame(frame: string) {
+        const line = frame.trim();
+        if (!line.startsWith("data:")) return;
+        const jsonText = line.slice(5).trim();
+        if (!jsonText || jsonText === "[DONE]") return;
+        try {
+          const obj = JSON.parse(jsonText);
+          const candidate = obj?.candidates?.[0];
+          const parts = candidate?.content?.parts;
+          if (Array.isArray(parts)) {
+            for (const p of parts) {
+              if (typeof p?.text === "string" && p.text.length > 0) {
+                receivedAny = true;
+                controller.enqueue(encoder.encode(p.text));
+              }
+            }
+          }
+          if (candidate?.finishReason) {
+            finishReason = candidate.finishReason;
+          }
+        } catch {
+          // Skip malformed frames silently.
+        }
+      }
+
       try {
         while (true) {
           const { value, done } = await reader.read();
@@ -120,36 +146,18 @@ export async function POST(req: Request) {
 
           const frames = buffer.split("\n\n");
           buffer = frames.pop() ?? "";
-          for (const frame of frames) {
-            const line = frame.trim();
-            if (!line.startsWith("data:")) continue;
-            const jsonText = line.slice(5).trim();
-            if (!jsonText || jsonText === "[DONE]") continue;
-            try {
-              const obj = JSON.parse(jsonText);
-              const candidate = obj?.candidates?.[0];
-              const parts = candidate?.content?.parts;
-              if (Array.isArray(parts)) {
-                for (const p of parts) {
-                  if (typeof p?.text === "string" && p.text.length > 0) {
-                    receivedAny = true;
-                    controller.enqueue(encoder.encode(p.text));
-                  }
-                }
-              }
-              if (candidate?.finishReason) {
-                finishReason = candidate.finishReason;
-              }
-            } catch {
-              // Skip malformed frames silently.
-            }
-          }
+          for (const frame of frames) processFrame(frame);
         }
 
-        // Stream ended but Gemini produced zero text — most likely a
-        // safety filter or max-tokens-on-thinking. Tell the user.
+        // Flush whatever's left after the stream closes — Gemini's last
+        // frame frequently arrives without a trailing blank line, and
+        // skipping it was the source of the "finishReason=unknown" tail.
+        buffer += decoder.decode();
+        const tail = buffer.trim();
+        if (tail.length > 0) processFrame(tail);
+
         if (!receivedAny) {
-          const reason = finishReason ?? "unknown";
+          const reason: string = finishReason ?? "unknown";
           const hint =
             reason === "SAFETY"
               ? "(O modelo bloqueou essa resposta por filtro de segurança. Reformula a pergunta.)"
