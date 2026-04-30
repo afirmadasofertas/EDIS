@@ -28,6 +28,11 @@ import {
 } from "@/components/ui/select";
 import { DeleteFolderDialog, EditFolderDialog } from "@/components/shared/folder-dialogs";
 import { FolderCard } from "@/components/shared/folder-card";
+import {
+  DeletePromptDialog,
+  EditPromptDialog,
+  type PromptUpdate,
+} from "@/components/shared/prompt-dialogs";
 import { ShareFolderDialog } from "@/components/shared/share-folder-dialog";
 import { cn } from "@/lib/utils";
 import type { DriveFolder, DriveFolderUpdate, PromptItem } from "./_data";
@@ -35,6 +40,7 @@ import type { DriveFolder, DriveFolderUpdate, PromptItem } from "./_data";
 const ALL = "__all__";
 
 type FolderDialogKind = "edit" | "delete" | "share";
+type PromptDialogKind = "edit" | "delete";
 export type LibraryMode = "creatives" | "prompts";
 
 interface DriveBrowserProps {
@@ -42,40 +48,58 @@ interface DriveBrowserProps {
   prompts: PromptItem[];
   mode: LibraryMode;
   onModeChange: (mode: LibraryMode) => void;
+  // Mutations are owned by the parent so they can persist to Supabase and
+  // trigger a re-fetch. The browser itself is stateless w.r.t. data.
+  onEditFolder: (id: string, updates: DriveFolderUpdate) => Promise<void> | void;
+  onDeleteFolder: (id: string) => Promise<void> | void;
+  onEditPrompt: (id: string, updates: PromptUpdate) => Promise<void> | void;
+  onDeletePrompt: (id: string) => Promise<void> | void;
 }
 
 export function DriveBrowser({
-  folders: initialFolders,
+  folders,
   prompts,
   mode,
   onModeChange,
+  onEditFolder,
+  onDeleteFolder,
+  onEditPrompt,
+  onDeletePrompt,
 }: DriveBrowserProps) {
   const router = useRouter();
-  const [folders, setFolders] = useState<DriveFolder[]>(initialFolders);
   const [query, setQuery] = useState("");
   const [month, setMonth] = useState<string>(ALL);
   const [year, setYear] = useState<string>(ALL);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeFolder, setActiveFolder] = useState<DriveFolder | null>(null);
-  const [activeDialog, setActiveDialog] = useState<FolderDialogKind | null>(null);
+  const [activeFolderDialog, setActiveFolderDialog] = useState<FolderDialogKind | null>(null);
+  const [activePrompt, setActivePrompt] = useState<PromptItem | null>(null);
+  const [activePromptDialog, setActivePromptDialog] = useState<PromptDialogKind | null>(null);
 
-  function openDialog(f: DriveFolder, kind: FolderDialogKind) {
+  function openFolderDialog(f: DriveFolder, kind: FolderDialogKind) {
     setActiveFolder(f);
-    setActiveDialog(kind);
+    setActiveFolderDialog(kind);
   }
 
-  function closeDialog() {
-    setActiveDialog(null);
+  function closeFolderDialog() {
+    setActiveFolderDialog(null);
   }
 
-  function handleEditFolder(id: string, updates: DriveFolderUpdate) {
-    setFolders((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, ...updates } : f))
-    );
+  function openPromptDialog(p: PromptItem, kind: PromptDialogKind) {
+    setActivePrompt(p);
+    setActivePromptDialog(kind);
   }
 
-  function handleDeleteFolder(id: string) {
-    setFolders((prev) => prev.filter((f) => f.id !== id));
+  function closePromptDialog() {
+    setActivePromptDialog(null);
+  }
+
+  async function handleCopyPrompt(p: PromptItem) {
+    try {
+      await navigator.clipboard.writeText(p.prompt);
+    } catch {
+      // ignore — clipboard might be unavailable in non-secure contexts
+    }
   }
 
   const monthOptions = useMemo(
@@ -307,37 +331,60 @@ export function DriveBrowser({
                 month={f.month}
                 year={f.year}
                 fileCount={f.fileCount}
-                onShare={() => openDialog(f, "share")}
-                onEdit={() => openDialog(f, "edit")}
-                onDelete={() => openDialog(f, "delete")}
+                onShare={() => openFolderDialog(f, "share")}
+                onEdit={() => openFolderDialog(f, "edit")}
+                onDelete={() => openFolderDialog(f, "delete")}
               />
             ))}
           </div>
         )
       ) : (
-        <PromptsGrid prompts={filteredPrompts} hasFilters={hasAnyFilter} />
+        <PromptsGrid
+          prompts={filteredPrompts}
+          hasFilters={hasAnyFilter}
+          onCopy={handleCopyPrompt}
+          onEdit={(p) => openPromptDialog(p, "edit")}
+          onDelete={(p) => openPromptDialog(p, "delete")}
+        />
       )}
 
       {activeFolder && (
         <>
           <ShareFolderDialog
-            open={activeDialog === "share"}
-            onOpenChange={(o) => (o ? null : closeDialog())}
+            open={activeFolderDialog === "share"}
+            onOpenChange={(o) => (o ? null : closeFolderDialog())}
             folderId={activeFolder.id}
             folderName={activeFolder.name}
           />
           <EditFolderDialog
-            open={activeDialog === "edit"}
-            onOpenChange={(o) => (o ? null : closeDialog())}
+            open={activeFolderDialog === "edit"}
+            onOpenChange={(o) => (o ? null : closeFolderDialog())}
             folder={activeFolder}
-            onSave={(updates) => handleEditFolder(activeFolder.id, updates)}
+            onSave={(updates) => onEditFolder(activeFolder.id, updates)}
           />
           <DeleteFolderDialog
-            open={activeDialog === "delete"}
-            onOpenChange={(o) => (o ? null : closeDialog())}
+            open={activeFolderDialog === "delete"}
+            onOpenChange={(o) => (o ? null : closeFolderDialog())}
             name={activeFolder.name}
             fileCount={activeFolder.fileCount}
-            onConfirm={() => handleDeleteFolder(activeFolder.id)}
+            onConfirm={() => onDeleteFolder(activeFolder.id)}
+          />
+        </>
+      )}
+
+      {activePrompt && (
+        <>
+          <EditPromptDialog
+            open={activePromptDialog === "edit"}
+            onOpenChange={(o) => (o ? null : closePromptDialog())}
+            prompt={activePrompt}
+            onSave={(updates) => onEditPrompt(activePrompt.id, updates)}
+          />
+          <DeletePromptDialog
+            open={activePromptDialog === "delete"}
+            onOpenChange={(o) => (o ? null : closePromptDialog())}
+            title={activePrompt.title}
+            onConfirm={() => onDeletePrompt(activePrompt.id)}
           />
         </>
       )}
@@ -348,9 +395,15 @@ export function DriveBrowser({
 function PromptsGrid({
   prompts,
   hasFilters,
+  onCopy,
+  onEdit,
+  onDelete,
 }: {
   prompts: PromptItem[];
   hasFilters: boolean;
+  onCopy: (p: PromptItem) => void;
+  onEdit: (p: PromptItem) => void;
+  onDelete: (p: PromptItem) => void;
 }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -359,13 +412,31 @@ function PromptsGrid({
           <EmptyState hasFilters={hasFilters} kind="prompt" />
         </div>
       ) : (
-        prompts.map((prompt) => <PromptCard key={prompt.id} prompt={prompt} />)
+        prompts.map((prompt) => (
+          <PromptCard
+            key={prompt.id}
+            prompt={prompt}
+            onCopy={() => onCopy(prompt)}
+            onEdit={() => onEdit(prompt)}
+            onDelete={() => onDelete(prompt)}
+          />
+        ))
       )}
     </div>
   );
 }
 
-function PromptCard({ prompt }: { prompt: PromptItem }) {
+function PromptCard({
+  prompt,
+  onCopy,
+  onEdit,
+  onDelete,
+}: {
+  prompt: PromptItem;
+  onCopy: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   return (
     <article className="group relative flex min-h-[230px] flex-col gap-4 rounded-xl border border-border bg-card p-4 transition-colors duration-150 hover:border-edis-line-3 hover:bg-edis-ink-2">
       <div className="flex items-start justify-between gap-3">
@@ -377,10 +448,14 @@ function PromptCard({ prompt }: { prompt: PromptItem }) {
             focus-within:pointer-events-auto focus-within:opacity-100
           "
         >
-          <PromptAction label="Visualizar" icon={ViewIcon} />
-          <PromptAction label="Copiar" icon={Copy01Icon} />
-          <PromptAction label="Editar" icon={PencilEdit01Icon} />
-          <PromptAction label="Excluir" icon={Delete02Icon} destructive />
+          <PromptAction label="Copiar" icon={Copy01Icon} onClick={onCopy} />
+          <PromptAction label="Editar" icon={PencilEdit01Icon} onClick={onEdit} />
+          <PromptAction
+            label="Excluir"
+            icon={Delete02Icon}
+            destructive
+            onClick={onDelete}
+          />
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-2">
@@ -418,16 +493,19 @@ function PromptAction({
   label,
   icon,
   destructive = false,
+  onClick,
 }: {
   label: string;
   icon: typeof ViewIcon;
   destructive?: boolean;
+  onClick: () => void;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
       title={label}
+      onClick={onClick}
       className={cn(
         "flex size-7 items-center justify-center rounded-md border transition-colors duration-150",
         destructive

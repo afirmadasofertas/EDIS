@@ -121,6 +121,62 @@ export default function DrivePage() {
     await refresh();
   }
 
+  async function handleEditFolder(
+    id: string,
+    updates: { name: string; month: string; year: number; description?: string }
+  ) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("drive_folders")
+      .update({
+        name: updates.name,
+        month: updates.month,
+        year: updates.year,
+        description: updates.description ?? null,
+      })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    await refresh();
+  }
+
+  async function handleDeleteFolder(id: string) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("drive_folders")
+      .delete()
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    await refresh();
+  }
+
+  async function handleEditPrompt(
+    id: string,
+    updates: { title: string; prompt: string; description?: string }
+  ) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("drive_prompts")
+      .update({
+        title: updates.title,
+        prompt: updates.prompt,
+        description: updates.description ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    await refresh();
+  }
+
+  async function handleDeletePrompt(id: string) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("drive_prompts")
+      .delete()
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    await refresh();
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -165,6 +221,10 @@ export default function DrivePage() {
         prompts={prompts}
         mode={mode}
         onModeChange={setMode}
+        onEditFolder={handleEditFolder}
+        onDeleteFolder={handleDeleteFolder}
+        onEditPrompt={handleEditPrompt}
+        onDeletePrompt={handleDeletePrompt}
       />
     </div>
   );

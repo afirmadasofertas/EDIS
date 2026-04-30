@@ -45,13 +45,10 @@ export default async function DashboardLayout({
         <AppSidebar />
         <SidebarInset className="bg-background">
           <Topbar />
-          <main
-            className={
-              isEditor ? "flex-1 overflow-hidden" : "flex-1 p-6 lg:p-8"
-            }
-          >
-            {children}
-          </main>
+          {/* Uniform padding for every dashboard page. /editor escapes
+              this via its own nested layout so the conditional doesn't
+              live here. */}
+          <main className="flex-1 p-6 lg:p-8">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </UserProvider>

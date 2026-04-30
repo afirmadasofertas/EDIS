@@ -25,19 +25,23 @@ import { cn } from "@/lib/utils";
 
 interface UploadFilesDialogProps {
   trigger: ReactNode;
-  /** Callback fired with the list of selected files on confirm. */
-  onUpload?: (files: File[]) => void;
+  /** Async callback — receives the picked files and persists them.
+   *  May throw to surface a friendly error in the dialog footer. */
+  onUpload?: (files: File[]) => Promise<void> | void;
 }
 
 export function UploadFilesDialog({ trigger, onUpload }: UploadFilesDialogProps) {
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setDragging] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = useCallback(() => {
     setFiles([]);
     setDragging(false);
+    setError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
 
@@ -52,12 +56,20 @@ export function UploadFilesDialog({ trigger, onUpload }: UploadFilesDialogProps)
     pick(e.dataTransfer.files);
   };
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (files.length === 0) return;
-    onUpload?.(files);
-    reset();
-    setOpen(false);
+    if (files.length === 0 || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await onUpload?.(files);
+      reset();
+      setOpen(false);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -173,25 +185,35 @@ export function UploadFilesDialog({ trigger, onUpload }: UploadFilesDialogProps)
             )}
           </div>
 
-          <DialogFooter className="m-0 flex-row justify-end gap-2 rounded-b-xl border-t border-border bg-card px-5 py-3 sm:justify-end">
-            <DialogClose asChild>
+          <DialogFooter className="m-0 flex-row items-center justify-between gap-2 rounded-b-xl border-t border-border bg-card px-5 py-3 sm:justify-between">
+            {error ? (
+              <p className="text-[12px] text-red-400">{error}</p>
+            ) : (
+              <span />
+            )}
+            <div className="ml-auto flex items-center gap-2">
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={submitting}
+                  className="h-9 border-edis-line-2 bg-transparent text-[13px] text-edis-text-2 hover:bg-edis-ink-3 hover:text-foreground"
+                >
+                  Cancelar
+                </Button>
+              </DialogClose>
               <Button
-                type="button"
-                variant="outline"
+                type="submit"
                 size="sm"
-                className="h-9 border-edis-line-2 bg-transparent text-[13px] text-edis-text-2 hover:bg-edis-ink-3 hover:text-foreground"
+                disabled={files.length === 0 || submitting}
+                className="h-9 bg-primary text-[13px] font-medium text-primary-foreground hover:bg-[#33eb8c] disabled:opacity-50"
               >
-                Cancelar
+                {submitting
+                  ? "Enviando…"
+                  : `Enviar ${files.length > 0 ? `${files.length} arquivo${files.length > 1 ? "s" : ""}` : "arquivos"}`}
               </Button>
-            </DialogClose>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={files.length === 0}
-              className="h-9 bg-primary text-[13px] font-medium text-primary-foreground hover:bg-[#33eb8c] disabled:opacity-50"
-            >
-              Enviar {files.length > 0 ? `${files.length} arquivo${files.length > 1 ? "s" : ""}` : "arquivos"}
-            </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

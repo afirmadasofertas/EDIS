@@ -18,13 +18,15 @@ import { cn } from "@/lib/utils";
 import type { DriveFile } from "../_data";
 
 interface FilesGridProps {
-  initialFiles: DriveFile[];
+  files: DriveFile[];
+  onRename: (id: string, newName: string) => Promise<void> | void;
+  onDelete: (id: string) => Promise<void> | void;
+  onDownload: (file: DriveFile) => Promise<void> | void;
 }
 
 type DialogKind = "preview" | "rename" | "delete";
 
-export function FilesGrid({ initialFiles }: FilesGridProps) {
-  const [files, setFiles] = useState<DriveFile[]>(initialFiles);
+export function FilesGrid({ files, onRename, onDelete, onDownload }: FilesGridProps) {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [activeFile, setActiveFile] = useState<DriveFile | null>(null);
   const [activeDialog, setActiveDialog] = useState<DialogKind | null>(null);
@@ -36,21 +38,6 @@ export function FilesGrid({ initialFiles }: FilesGridProps) {
   function closeDialog() {
     setActiveDialog(null);
     // Keep activeFile briefly so the dialog's closing animation still has content.
-  }
-
-  function handleDownload(file: DriveFile) {
-    if (!file.thumbnailUrl) return;
-    window.open(file.thumbnailUrl, "_blank", "noopener,noreferrer");
-  }
-
-  function handleRename(id: string, newName: string) {
-    setFiles((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, name: newName } : f))
-    );
-  }
-
-  function handleDelete(id: string) {
-    setFiles((prev) => prev.filter((f) => f.id !== id));
   }
 
   const empty = files.length === 0;
@@ -93,7 +80,7 @@ export function FilesGrid({ initialFiles }: FilesGridProps) {
               thumbnailUrl={f.thumbnailUrl}
               onPreview={() => openDialog(f, "preview")}
               onRename={() => openDialog(f, "rename")}
-              onDownload={() => handleDownload(f)}
+              onDownload={() => onDownload(f)}
               onDelete={() => openDialog(f, "delete")}
             />
           ))}
@@ -110,7 +97,7 @@ export function FilesGrid({ initialFiles }: FilesGridProps) {
               thumbnailUrl={f.thumbnailUrl}
               onPreview={() => openDialog(f, "preview")}
               onRename={() => openDialog(f, "rename")}
-              onDownload={() => handleDownload(f)}
+              onDownload={() => onDownload(f)}
               onDelete={() => openDialog(f, "delete")}
             />
           ))}
@@ -127,19 +114,19 @@ export function FilesGrid({ initialFiles }: FilesGridProps) {
             name={activeFile.name}
             thumbnailUrl={activeFile.thumbnailUrl}
             kind={activeFile.kind}
-            onDownload={() => handleDownload(activeFile)}
+            onDownload={() => onDownload(activeFile)}
           />
           <RenameFileDialog
             open={activeDialog === "rename"}
             onOpenChange={(o) => (o ? null : closeDialog())}
             currentName={activeFile.name}
-            onSave={(newName) => handleRename(activeFile.id, newName)}
+            onSave={(newName) => onRename(activeFile.id, newName)}
           />
           <DeleteFileDialog
             open={activeDialog === "delete"}
             onOpenChange={(o) => (o ? null : closeDialog())}
             name={activeFile.name}
-            onConfirm={() => handleDelete(activeFile.id)}
+            onConfirm={() => onDelete(activeFile.id)}
           />
         </>
       )}
