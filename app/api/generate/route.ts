@@ -271,10 +271,17 @@ function buildTypographyBlock(p: ApiPayload): string {
     .filter(Boolean)
     .join(" ");
 
+  // Word-level emphasis — pulls the eye to the part of each line that
+  // actually drives the message (a number, a date, a key benefit verb).
+  // Constrained to the brand palette so the highlight stays on-brand.
+  const emphasis =
+    "Within each line of typography, identify the single most important word or short phrase — a number, a date, the key benefit, or the action verb — and emphasize it via heavier weight, slightly larger size, OR a contrasting accent color drawn STRICTLY from the supplied color palette. The rest of the line stays in the base treatment. Keep the emphasis subtle and on-brand: never use colors outside the palette, never break the typographic register set by the mode, never highlight more than one fragment per line.";
+
   return [
     "Render typography with the following exact styling:",
     rendered,
     placement,
+    emphasis,
     "Spell every word exactly as written. These are the only words that may appear in the image.",
   ]
     .filter(Boolean)
