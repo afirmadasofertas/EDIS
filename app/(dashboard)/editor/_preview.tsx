@@ -224,10 +224,6 @@ export function CenterPreview() {
                 previous result so it's clear something new is in flight. */}
             {generating ? (
               <div className="edis-raven-loop relative grid place-items-center">
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 -m-8 animate-pulse rounded-full bg-edis-mint/20 blur-2xl"
-                />
                 <EdisLogo variant="mark" size={Math.min(dims.w, dims.h) * 0.18} />
               </div>
             ) : latestImage ? (

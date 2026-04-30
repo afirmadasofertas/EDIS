@@ -42,7 +42,7 @@ export function PhaseStepper({ activePhase, onPhaseClick }: PhaseStepperProps) {
                 className={cn(
                   "flex size-8 items-center justify-center rounded-full border text-[12px] font-medium transition-all duration-200",
                   isActive &&
-                    "border-edis-mint bg-edis-mint/10 text-edis-mint shadow-[0_0_12px_rgba(0,229,115,0.15)]",
+                    "border-edis-mint bg-edis-mint/10 text-edis-mint",
                   isDone &&
                     "border-edis-mint bg-edis-mint text-edis-ink-0",
                   !isActive &&

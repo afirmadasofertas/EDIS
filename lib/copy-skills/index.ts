@@ -16,7 +16,8 @@
 
 /**
  * Phrases that INSTANTLY mark copy as AI-generated or amateur.
- * Banned from every output.
+ * Banned from every output. The em-dash (—) is in here too because
+ * it's the single biggest "this was written by ChatGPT" tell.
  */
 export const ANTI_AI_PATTERNS = [
   "transforme sua vida",
@@ -37,6 +38,7 @@ export const ANTI_AI_PATTERNS = [
   "100% garantido",
   "passo a passo definitivo",
   "método infalível",
+  "—", // em-dash; use ponto, vírgula ou dois-pontos no lugar
 ];
 
 // ---- Hook patterns (how to OPEN) -------------------------------------
@@ -119,14 +121,35 @@ export const FRAMEWORKS: Record<FrameworkType, { name: string; recipe: string }>
 // ---- Voice rules (HOW to write) --------------------------------------
 
 export const VOICE_RULES = [
-  "Pessoal, segunda pessoa: você, seu, sua. Nunca 'você(s)', 'os usuários'.",
+  "Pessoal, segunda pessoa: você, seu, sua. Nunca 'vocês', 'os usuários'.",
   "Brasileiro coloquial: tá, pra, né, dá pra. Não 'está', 'para'.",
-  "Números específicos: R$ 197, 7 dias, 3x — não 'barato', 'rápido', 'várias vezes'.",
-  "Promessa concreta: 'R$ 5k em 30 dias com X' — não 'ficar rico', 'mudar de vida'.",
-  "Verbos de ação que implicam compromisso: 'Garantir vaga', 'Entrar agora', 'Comprar' — não 'Saiba mais', 'Conheça'.",
+  "Números específicos: R$ 197, 7 dias, 3x. Não 'barato', 'rápido', 'várias vezes'.",
+  "Promessa concreta: 'R$ 5k em 30 dias com X'. Não 'ficar rico', 'mudar de vida'.",
+  "Verbos de ação que implicam compromisso: 'Garantir vaga', 'Entrar agora', 'Comprar'. Não 'Saiba mais', 'Conheça'.",
   "Frases curtas. Pontuação limpa. Zero emoji a menos que o nicho exija (humor, gen-z).",
   "Sem CAPS LOCK. Sem ênfase com asteriscos. O peso vem da palavra escolhida, não da formatação.",
   "Dor antes do benefício. O leitor identifica o problema dele primeiro, depois decide se quer a solução.",
+  "PROIBIDO travessão (—). Use ponto, vírgula ou dois-pontos. Travessão é o tell mais óbvio de ChatGPT.",
+];
+
+// ---- Cultural awareness (PT-BR) --------------------------------------
+
+/**
+ * Notes on Brazilian internet/market context. Goal isn't "use memes" —
+ * forced memes envelhecem na semana e dão cringe. Goal is: o copy soa
+ * brasileiro, não traduzido. Referências landam quando fazem sentido,
+ * humor entra quando o nicho aceita, observação afiada substitui clichê.
+ */
+export const CULTURE_NOTES = [
+  "Brasil compra com humor. Auto-deboche e observação afiada vendem mais que solenidade. 'Sei que você tá comprando outro curso pra fingir que vai estudar' converte mais que 'aprenda agora'.",
+  "Referências landam quando NÃO são forçadas. Use só quando o nicho realmente vive isso. 'Tá igual fila do INSS' funciona em copy de produtividade, não em jurídico premium.",
+  "Cuidado com meme datado. Nada de 'glr', 'PQP', 'kkkk' a menos que o nicho seja TikTok / gen-z. Em 6 meses envelhecem.",
+  "Dor brasileira específica > dor genérica. 'Você abre a fatura do cartão e dá um nó na barriga' bate mais que 'controle suas finanças'.",
+  "Trabalhe contra o senso comum. Hooks contrarian funcionam: 'Pare de seguir gurus de morning routine', 'Esquece esse papo de nicho', 'Não é falta de disciplina'.",
+  "Use cenas reais do dia a dia: filho gritando, boleto vencendo, chefe no Slack às 22h, almoço de domingo, segunda-feira. Concreto > abstrato.",
+  "Tendências do mercado em 2026: micro-SaaS solo, IA aplicada (não generalista), comunidades fechadas pagas, infoproduto curto (7-30 dias), serviços done-for-you. Use quando casa com o nicho.",
+  "Auto-deboche autoral funciona melhor que sarcasmo agressivo. 'Eu já caí nessa' > 'Você é burro de cair nessa'.",
+  "Não tente ser engraçado quando o nicho é dor real (saúde, finanças apertadas, divórcio). Aí o tom é direto e empático, não humor.",
 ];
 
 // ---- Few-shot examples (PT-BR) ---------------------------------------
@@ -208,6 +231,16 @@ export function formatVoiceRules(): string {
   return [
     "Regras de voz (sempre):",
     ...VOICE_RULES.map((r, i) => `${i + 1}. ${r}`),
+  ].join("\n");
+}
+
+/**
+ * Render the cultural-awareness notes as a list block.
+ */
+export function formatCultureNotes(): string {
+  return [
+    "Cultura e mercado BR (use quando casar):",
+    ...CULTURE_NOTES.map((r) => `· ${r}`),
   ].join("\n");
 }
 

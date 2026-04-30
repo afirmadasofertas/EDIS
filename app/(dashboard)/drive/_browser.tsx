@@ -534,7 +534,6 @@ function GreenIcon({
         className="
           flex h-full w-full items-center justify-center rounded-md
           bg-gradient-to-br from-[#007F3E] to-[#00572B] text-white
-          shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_2px_6px_rgba(0,229,115,0.18)]
         "
       >
         <Icon icon={icon} size={18} strokeWidth={2.25} className="size-[18px]" />

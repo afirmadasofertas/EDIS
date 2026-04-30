@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import {
   formatBannedPhrases,
+  formatCultureNotes,
   formatFewShotBlock,
   formatVoiceRules,
   HOOKS,
@@ -158,6 +159,8 @@ Você não é um chatbot genérico. Você é um copywriter conversando. Quando o
 ${formatVoiceRules()}
 
 ${formatBannedPhrases()}
+
+${formatCultureNotes()}
 
 Catálogo de hooks que você usa:
 ${HOOK_CATALOG}

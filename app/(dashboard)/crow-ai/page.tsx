@@ -196,6 +196,20 @@ function MessageBubble({
     }
   }
 
+  // Loading state: no bubble chrome — raven + "Escrevendo..." in mint.
+  if (isLastEmpty) {
+    return (
+      <div className="flex items-center gap-2 px-1 py-1">
+        <span className="edis-raven-loop inline-flex">
+          <EdisLogo variant="mark" size={16} />
+        </span>
+        <span className="edis-typing-dots font-mono text-[10.5px] uppercase tracking-[0.16em] text-edis-mint">
+          Escrevendo
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -211,21 +225,10 @@ function MessageBubble({
             : "bg-edis-mint/5 text-edis-text-1 ring-1 ring-edis-mint/15"
         )}
       >
-        {isLastEmpty ? (
-          <span className="inline-flex items-center gap-2 text-edis-text-4">
-            <span className="edis-raven-loop inline-flex">
-              <EdisLogo variant="mark" size={16} />
-            </span>
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.16em]">
-              escrevendo
-            </span>
-          </span>
-        ) : (
-          message.content
-        )}
+        {message.content}
       </div>
 
-      {!isUser && message.content.length > 0 && (
+      {!isUser && (
         <button
           type="button"
           onClick={copy}
@@ -245,11 +248,7 @@ function EmptyState() {
     <div className="flex flex-1 flex-col items-center justify-center gap-5 py-12 text-center">
       {/* Raven mark — sparkles loop continuously to give the surface a
           subtle sign of life before the user types anything. */}
-      <div className="edis-raven-loop relative grid place-items-center">
-        <span
-          aria-hidden
-          className="absolute inset-0 -m-6 rounded-full bg-edis-mint/10 blur-2xl"
-        />
+      <div className="edis-raven-loop">
         <EdisLogo variant="mark" size={56} />
       </div>
       <div className="flex flex-col gap-1.5">

@@ -71,9 +71,6 @@ export function FolderCard({
               className="
                 flex h-full w-full items-center justify-center rounded-md
                 bg-gradient-to-br from-[#007F3E] to-[#00572B] text-white
-                shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_2px_6px_rgba(0,229,115,0.18)]
-                transition-shadow duration-150
-                group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.26),0_3px_10px_rgba(0,229,115,0.3)]
               "
             >
               <Icon
