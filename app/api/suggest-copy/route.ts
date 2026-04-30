@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  formatBannedPhrases,
+  formatFewShotBlock,
+  formatHookGuide,
+  formatVoiceRules,
+  suggestHookForNiche,
+} from "@/lib/copy-skills";
 
 // Lightweight text-only Gemini call for copy suggestions. Cheap + fast,
-// independent of the image generation model.
+// independent of the image generation model. Uses the Brazilian black-
+// style copywriting skills library so suggestions don't read as AI.
 
 const MODEL = "gemini-2.5-flash";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
@@ -104,25 +112,43 @@ export async function POST(req: Request) {
 
 function buildCopyPrompt(b: Body): string {
   const niche = b.niche?.trim() || "produto / serviço genérico";
-  const modeLabel =
-    b.mode === "campaign"
-      ? "campanha brasileira de SaaS / produto (poster cinematográfico, urgência, hook)"
-      : "editorial premium (magazine, sofisticado, naturalístico)";
+  const mode = b.mode ?? "editorial";
   const note = b.creativeNote?.trim();
+  const hook = suggestHookForNiche(niche, mode);
+
+  const modeContext =
+    mode === "campaign"
+      ? "Campanha brasileira de SaaS / infoproduto / ecommerce — direct response, alta conversão, scroll-stop. Tom: persuasivo, urgência real, dor antes do benefício, números concretos. NÃO é institucional, NÃO é editorial polido."
+      : "Editorial premium — magazine, sofisticado. Tom mais reservado mas ainda direto. Sem clichê corporativo, sem cara de IA.";
 
   return [
-    `Você é copywriter sênior brasileiro especializado em direct response e ads para ${modeLabel}.`,
+    "Você é copywriter sênior brasileiro de direct response. Top 1% do mercado.",
+    "Escreve como Pablo Marçal, Erico Rocha, Wendell Carvalho — direto, pessoal, sem rodeio.",
+    "",
+    `Contexto de modo: ${modeContext}`,
     `Nicho do anúncio: ${niche}.`,
     note ? `Direção criativa adicional: ${note}.` : "",
     "",
-    "Gere 3 opções para CADA campo abaixo, em PT-BR, alinhadas ao nicho e ao estilo:",
+    formatVoiceRules(),
     "",
-    "- headlines: 3 opções de headline curta (máx 8 palavras), scroll-stop, sem clichê de marketeiro, sem emoji, sem aspas dentro do texto.",
-    "- subheadlines: 3 opções de subheadline (máx 14 palavras) que reforce o headline com benefício concreto.",
-    "- ctas: 3 opções de CTA curto (máx 4 palavras) tipo botão de ação ('Quero entrar', 'Garantir vaga', 'Comprar agora').",
+    formatBannedPhrases(),
     "",
-    "Diferentes ângulos entre as 3 opções: uma direta, uma com curiosidade, uma com escassez/urgência.",
-    "Não invente fatos. Não use 'TRANSFORME SUA VIDA' ou clichês similares. Use linguagem natural brasileira.",
+    formatHookGuide(hook),
+    "",
+    formatFewShotBlock(),
+    "",
+    "Gere 3 opções para CADA campo abaixo, todas em PT-BR brasileiro coloquial:",
+    "",
+    "- headlines: 3 opções de headline curta (máx 8 palavras), scroll-stop. Use 3 ângulos diferentes entre elas (curiosidade / dor / prova).",
+    "- subheadlines: 3 opções (máx 14 palavras) que aprofundem o headline com benefício concreto + número/prazo quando possível.",
+    "- ctas: 3 opções de CTA curto (máx 4 palavras), verbo de compromisso ('Garantir vaga', 'Quero entrar', 'Vou começar').",
+    "",
+    "REGRAS DURAS:",
+    "1. ZERO frase da lista PROIBIDO acima.",
+    "2. Cada headline tem que ter pelo menos 1 elemento concreto: número, prazo, benefício específico, ou pain point real.",
+    "3. Sem emoji. Sem CAPS. Sem aspas dentro do texto.",
+    "4. Voz: você fala com UMA pessoa, não com 'pessoal' ou 'galera'.",
+    "5. Se não conseguir gerar uma headline boa sem inventar fato, prefira a mais conservadora.",
     "",
     "Devolva APENAS um JSON válido com chaves headlines, subheadlines, ctas (cada um array de 3 strings).",
   ]
