@@ -9,7 +9,7 @@ export function GalleryPanel() {
   const { generations, removeGeneration } = useEditor();
 
   return (
-    <aside className="flex h-full w-[280px] shrink-0 flex-col border-l border-edis-line-1 bg-edis-ink-1">
+    <aside className="hidden h-full w-[280px] shrink-0 flex-col border-l border-edis-line-1 bg-edis-ink-1 xl:flex">
       <div className="flex items-center justify-between border-b border-edis-line-1 px-4 py-3">
         <span className="edis-tag">Histórico</span>
         <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-edis-text-4">

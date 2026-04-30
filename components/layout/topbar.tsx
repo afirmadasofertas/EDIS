@@ -18,6 +18,10 @@ export function Topbar() {
     )?.[1] ??
     "Workspace";
   const group = getGroupForPath(pathname);
+  // Editor needs the full canvas width; the sidebar must stay collapsed
+  // there. Hiding the trigger removes the only way for the user to
+  // expand it back and break the editor's fixed-position layout.
+  const isEditor = pathname.startsWith("/editor");
 
   return (
     <header
@@ -26,11 +30,15 @@ export function Topbar() {
         bg-background/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/60
       "
     >
-      <SidebarTrigger className="-ml-1 size-8 text-edis-text-3 hover:text-foreground" />
-      <Separator
-        orientation="vertical"
-        className="mx-1 !h-full w-px bg-border"
-      />
+      {!isEditor && (
+        <>
+          <SidebarTrigger className="-ml-1 size-8 text-edis-text-3 hover:text-foreground" />
+          <Separator
+            orientation="vertical"
+            className="mx-1 !h-full w-px bg-border"
+          />
+        </>
+      )}
 
       <div className="flex min-w-0 items-center gap-2">
         <span className="edis-eyebrow hidden sm:inline">{group}</span>
