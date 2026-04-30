@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { forwardRef, useCallback, useEffect, useState, type ReactNode } from "react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 
 import { Button } from "@/components/ui/button";
@@ -175,16 +175,21 @@ function formatUpdatedAt(iso: string): string {
   return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function PrimaryActionButton({
-  icon,
-  children,
-}: {
-  icon: typeof Add01Icon;
-  children: ReactNode;
-}) {
+// Forward refs + spread props so <DialogTrigger asChild> can attach its
+// onClick / aria-* / data-state to the underlying Button. Without this the
+// trigger never fires and the dialog never opens.
+const PrimaryActionButton = forwardRef<
+  HTMLButtonElement,
+  {
+    icon: typeof Add01Icon;
+    children: ReactNode;
+  } & React.ComponentProps<typeof Button>
+>(function PrimaryActionButton({ icon, children, ...props }, ref) {
   return (
     <Button
+      ref={ref}
       size="sm"
+      {...props}
       className="
         h-9 gap-2 rounded-md bg-primary px-3.5
         text-[13px] font-medium text-primary-foreground
@@ -195,4 +200,4 @@ function PrimaryActionButton({
       {children}
     </Button>
   );
-}
+});
