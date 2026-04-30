@@ -396,7 +396,7 @@ function CritiqueList({
             {label}
           </span>
         </div>
-        <p className="text-[11px] italic text-edis-text-4">—</p>
+        <p className="text-[11px] italic text-edis-text-4">vazio</p>
       </div>
     );
   }

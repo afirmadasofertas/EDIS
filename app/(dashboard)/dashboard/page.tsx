@@ -6,7 +6,7 @@ export default function DashboardPage() {
     <PlaceholderPage
       eyebrow="Dashboard"
       title="Seu canvas de criativos."
-      description="Assim que conectar o Meta Ads, seus últimos anúncios, savings e performance aparecem aqui — tudo num só lugar."
+      description="Assim que conectar o Meta Ads, seus últimos anúncios, savings e performance aparecem aqui. Tudo num só lugar."
       icon={DashboardSquare01Icon}
     />
   );

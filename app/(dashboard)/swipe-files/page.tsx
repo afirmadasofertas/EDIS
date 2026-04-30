@@ -28,7 +28,7 @@ export default function GeradorPage() {
           Gerador de Anúncios
         </h1>
         <p className="max-w-xl text-[14px] leading-[1.55] text-edis-text-3">
-          40 anúncios profissionais para qualquer marca — do briefing à galeria
+          40 anúncios profissionais para qualquer marca. Do briefing à galeria
           pronta para veicular.
         </p>
       </header>

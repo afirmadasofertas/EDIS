@@ -42,7 +42,7 @@ export function PlaceholderPage({
           <div className="flex flex-col items-center gap-1.5">
             <span className="edis-tag">{comingSoon}</span>
             <p className="max-w-sm text-[13.5px] leading-[1.55] text-edis-text-3">
-              Esta seção ainda não foi construída. A casca está pronta — o
+              Esta seção ainda não foi construída. A casca está pronta. O
               conteúdo chega nas próximas fases.
             </p>
           </div>

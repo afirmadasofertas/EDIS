@@ -15,25 +15,25 @@ const REFERENCES: Reference[] = [
     id: "noticia",
     name: "Formato Notícia",
     description:
-      "Cara de matéria de jornal — quebra padrão de feed, alto CTR.",
+      "Cara de matéria de jornal. Quebra padrão de feed, alto CTR.",
     whenToUse: "Ofertas locais, lançamentos, validação de marca.",
-    image: "/referencias/noticia.jpg",
+    image: "/referencias/noticia.png",
     alt: "Reference: ad em formato notícia com header vermelho e headline em caixa alta",
   },
   {
     id: "fofoca",
     name: "Página de fofoca",
-    description: "Estilo Choquei — viral, autoridade emprestada de gossip.",
+    description: "Estilo Choquei. Viral, autoridade emprestada de gossip.",
     whenToUse: "Estética, transformação, prova social impactante.",
-    image: "/referencias/fofoca.jpg",
+    image: "/referencias/fofoca.png",
     alt: "Reference: ad estilo Choquei com perfil verificado e foto antes/depois",
   },
   {
     id: "vs-concorrente",
     name: "Você x Concorrente",
-    description: "Comparativo split — defeito do outro vs benefício seu.",
+    description: "Comparativo split. Defeito do outro vs benefício seu.",
     whenToUse: "Quando seu produto resolve dor que o concorrente cria.",
-    image: "/referencias/concorrente.jpg",
+    image: "/referencias/concorrente.png",
     alt: "Reference: comparativo entre concorrente genérico e produto da marca",
   },
   {
@@ -41,7 +41,7 @@ const REFERENCES: Reference[] = [
     name: "Antes x Depois UGC",
     description: "Selfie antes / selfie depois com produto.",
     whenToUse: "Resultado físico ou estético verificável em N dias.",
-    image: "/referencias/antes-depois.jpg",
+    image: "/referencias/antes-depois.png",
     alt: "Reference: antes e depois UGC com Day 1 e Day 30",
   },
   {
@@ -49,8 +49,16 @@ const REFERENCES: Reference[] = [
     name: "Promoção",
     description: "Hero shot do produto + desconto gigante + bônus.",
     whenToUse: "Black Friday, queima de estoque, oferta de lançamento.",
-    image: "/referencias/promocao.jpg",
+    image: "/referencias/promocao.png",
     alt: "Reference: criativo de promoção com SAVE 52% e produto em destaque",
+  },
+  {
+    id: "review",
+    name: "Reviews / Depoimentos",
+    description: "Quote de cliente real + estrelas + foto do produto.",
+    whenToUse: "Reforçar prova social depois do hook inicial.",
+    image: "/referencias/review.png",
+    alt: "Reference: criativo de review com depoimento, estrelas e produto",
   },
 ];
 
@@ -67,7 +75,7 @@ export default function ReferenciasPage() {
         </h1>
         <p className="max-w-2xl text-[14px] leading-[1.55] text-edis-text-3">
           5 padrões de ad direto que mais convertem hoje. Use como
-          referência visual no editor — copia o layout, adapta pro seu
+          referência visual no editor. Copia o layout, adapta pro seu
           nicho.
         </p>
       </header>

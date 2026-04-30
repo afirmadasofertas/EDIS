@@ -168,7 +168,7 @@ export function ModulePlayer({ module: m, lessons }: ModulePlayerProps) {
             />
           </div>
           <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-edis-text-4">
-            {percent}% concluído —{" "}
+            {percent}% concluído ·{" "}
             <span className="text-edis-text-2">
               {lessons.filter((l) => completed.has(l.id)).length}/{lessons.length}
             </span>{" "}
@@ -466,7 +466,7 @@ function ArticleBlockRenderer({ block }: { block: ArticleBlock }) {
           </p>
           {block.attribution && (
             <cite className="mt-1 block font-mono text-[11px] not-italic text-edis-text-4">
-              — {block.attribution}
+              · {block.attribution}
             </cite>
           )}
         </blockquote>

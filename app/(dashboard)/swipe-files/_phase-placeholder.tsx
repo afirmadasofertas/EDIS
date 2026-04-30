@@ -20,7 +20,7 @@ const PHASE_META: Record<
     icon: Atom02Icon,
     label: "DNA Brand",
     description:
-      "Extração automática de identidade visual — cores, tipografia, estilo fotográfico e tom de voz da marca.",
+      "Extração automática de identidade visual: cores, tipografia, estilo fotográfico e tom de voz da marca.",
   },
   3: {
     icon: OrthogonalEdgeIcon,
@@ -67,7 +67,7 @@ export function PhasePlaceholder({ phase, onNext, onBack }: PhasePlaceholderProp
           </p>
         </div>
         <p className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-edis-text-4">
-          Em construção — UI visual em breve
+          Em construção · UI visual em breve
         </p>
       </div>
 

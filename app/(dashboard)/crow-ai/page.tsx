@@ -154,7 +154,7 @@ export default function CrowAIPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Pede copy, hook, headline, body — ou pergunta sobre estratégia."
+          placeholder="Pede copy, hook, headline, body. Ou pergunta sobre estratégia."
           rows={1}
           className="
             min-h-[40px] max-h-[160px] flex-1 resize-none bg-transparent
@@ -350,7 +350,7 @@ function EmptyState() {
           Pergunta o que quiser sobre copy.
         </h2>
         <p className="max-w-md text-[13.5px] leading-[1.55] text-edis-text-3">
-          Hooks, headlines, body, reescrita, estratégia — conversa direto.
+          Hooks, headlines, body, reescrita, estratégia. Conversa direto.
           Voz brasileira, sem cara de IA.
         </p>
       </div>
