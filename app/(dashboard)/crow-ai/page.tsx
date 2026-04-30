@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   ArrowUp01Icon,
   Copy01Icon,
@@ -219,13 +221,17 @@ function MessageBubble({
     >
       <div
         className={cn(
-          "max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-[14px] leading-[1.55]",
+          "max-w-[88%] rounded-2xl px-4 py-2.5 text-[14px] leading-[1.55]",
           isUser
-            ? "bg-edis-ink-3 text-foreground"
+            ? "whitespace-pre-wrap bg-edis-ink-3 text-foreground"
             : "bg-edis-mint/5 text-edis-text-1 ring-1 ring-edis-mint/15"
         )}
       >
-        {message.content}
+        {isUser ? (
+          message.content
+        ) : (
+          <MarkdownContent content={message.content} />
+        )}
       </div>
 
       {!isUser && (
@@ -239,6 +245,91 @@ function MessageBubble({
           Copiar
         </button>
       )}
+    </div>
+  );
+}
+
+/**
+ * Renders the assistant's message as markdown with EDIS-tuned typography.
+ * Each element is mapped to a styled span so the output respects the
+ * panel's design system (mono labels, tight leading, mint accent on
+ * inline code).
+ */
+function MarkdownContent({ content }: { content: string }) {
+  return (
+    <div className="prose-edis flex flex-col gap-3">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          p: ({ children }) => (
+            <p className="m-0 leading-[1.55]">{children}</p>
+          ),
+          strong: ({ children }) => (
+            <strong className="font-semibold text-foreground">{children}</strong>
+          ),
+          em: ({ children }) => (
+            <em className="italic text-edis-text-1">{children}</em>
+          ),
+          ul: ({ children }) => (
+            <ul className="m-0 flex list-none flex-col gap-1.5 pl-0">
+              {children}
+            </ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="m-0 flex list-decimal flex-col gap-1.5 pl-5 marker:text-edis-text-4">
+              {children}
+            </ol>
+          ),
+          li: ({ children }) => (
+            <li className="leading-[1.5] before:mr-1.5 before:text-edis-mint before:content-['·'] [li:where(ol_>_&)]:before:content-none">
+              {children}
+            </li>
+          ),
+          h1: ({ children }) => (
+            <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-edis-text-4">
+              {children}
+            </h3>
+          ),
+          h2: ({ children }) => (
+            <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-edis-text-4">
+              {children}
+            </h3>
+          ),
+          h3: ({ children }) => (
+            <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-edis-text-4">
+              {children}
+            </h3>
+          ),
+          code: ({ children }) => (
+            <code className="rounded bg-edis-ink-3 px-1.5 py-0.5 font-mono text-[12.5px] text-edis-mint">
+              {children}
+            </code>
+          ),
+          pre: ({ children }) => (
+            <pre className="overflow-x-auto rounded-md border border-edis-line-2 bg-edis-ink-2 p-3 font-mono text-[12px] leading-[1.55] text-edis-text-2">
+              {children}
+            </pre>
+          ),
+          blockquote: ({ children }) => (
+            <blockquote className="border-l-2 border-edis-mint/40 pl-3 italic text-edis-text-2">
+              {children}
+            </blockquote>
+          ),
+          a: ({ children, href }) => (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-edis-mint underline-offset-2 hover:underline"
+            >
+              {children}
+            </a>
+          ),
+          hr: () => <hr className="my-2 border-edis-line-1" />,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }
