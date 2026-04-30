@@ -61,10 +61,11 @@ export async function POST(req: Request) {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
         responseMimeType: "application/json",
-        // Cap thinking so the JSON response actually fits in the token
-        // budget instead of being eaten by hidden chain-of-thought.
-        thinkingConfig: { thinkingBudget: 1024 },
-        maxOutputTokens: 4096,
+        // -1 = dynamic thinking (model picks budget). A fixed cap led
+        // to silent empty responses when the model needed more tokens
+        // than the cap allowed.
+        thinkingConfig: { thinkingBudget: -1 },
+        maxOutputTokens: 8192,
         responseSchema: {
           type: "object",
           properties: {

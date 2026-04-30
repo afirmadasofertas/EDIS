@@ -80,11 +80,12 @@ export async function POST(req: Request) {
         // Generous output budget so long body copy + multi-headline
         // replies don't get truncated mid-paragraph.
         maxOutputTokens: 8192,
-        // gemini-3 pro has thinking ON by default and will spend the
-        // ENTIRE token budget reasoning before emitting text. Cap it so
-        // there's actual room left for the reply. 1024 of thinking is
-        // plenty for chat-style copy questions.
-        thinkingConfig: { thinkingBudget: 1024 },
+        // gemini-3-pro-preview REQUIRES thinking (rejects budget=0).
+        // -1 means "dynamic" — let the model decide how much it needs.
+        // A fixed cap (e.g. 1024) caused empty replies on longer queries
+        // because the model used 1100+ tokens reasoning and finished
+        // before emitting text.
+        thinkingConfig: { thinkingBudget: -1 },
       },
     }),
   });

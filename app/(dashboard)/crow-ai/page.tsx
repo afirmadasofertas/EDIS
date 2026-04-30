@@ -127,7 +127,7 @@ export default function CrowAIPage() {
       {/* Messages */}
       <div
         ref={scrollRef}
-        className="flex flex-1 flex-col gap-4 overflow-y-auto pr-2"
+        className="flex flex-1 flex-col gap-4 overflow-y-auto px-2"
       >
         {messages.length === 0 ? (
           <EmptyState />

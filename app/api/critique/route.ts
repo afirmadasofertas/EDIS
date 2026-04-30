@@ -84,9 +84,11 @@ export async function POST(req: Request) {
       ],
       generationConfig: {
         responseMimeType: "application/json",
-        // Critique benefits from a bit more reasoning (visual analysis).
-        thinkingConfig: { thinkingBudget: 2048 },
-        maxOutputTokens: 4096,
+        // -1 = dynamic thinking — visual critique can need a lot of
+        // reasoning depending on the image. Fixed caps cause empty
+        // returns when the budget runs out before output starts.
+        thinkingConfig: { thinkingBudget: -1 },
+        maxOutputTokens: 8192,
         responseSchema: {
           type: "object",
           properties: {
