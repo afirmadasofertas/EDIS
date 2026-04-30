@@ -6,7 +6,6 @@ export type Framing = "close-up" | "medium" | "wide";
 export type Position = "left" | "center" | "right";
 export type Alignment = "left" | "center" | "right";
 export type VerticalAlignment = "top" | "middle" | "bottom";
-export type VisualStyle = "minimalist" | "bold" | "lifestyle" | "corporate";
 export type Lighting = "cold" | "warm" | "neutral" | "dark" | "vibrant";
 export type Dimensions = "9:16" | "4:5" | "16:9" | "1:1";
 
@@ -39,7 +38,6 @@ export type EditorState = {
     textVertical: VerticalAlignment;
   };
   style: {
-    visualStyle: VisualStyle;
     colorPalette: string[];
     lighting: Lighting;
     dimensions: Dimensions;
@@ -74,7 +72,6 @@ export const DEFAULT_STATE: EditorState = {
     textVertical: "bottom",
   },
   style: {
-    visualStyle: "bold",
     colorPalette: ["#0a0a0a", "#00e573"],
     lighting: "warm",
     dimensions: "9:16",
@@ -110,7 +107,6 @@ export function toApiPayload(s: EditorState) {
       layout,
     },
     style: {
-      visual_style: s.style.visualStyle,
       color_palette: s.style.colorPalette,
       lighting: s.style.lighting,
       dimensions: s.style.dimensions,

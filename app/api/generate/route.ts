@@ -9,7 +9,6 @@ import {
   SYSTEM_DIRECTIVE,
   TEXT_ALIGNMENT,
   TEXT_VERTICAL,
-  VISUAL_STYLE,
 } from "@/app/(dashboard)/editor/_prompt-templates";
 import type {
   Alignment,
@@ -19,7 +18,6 @@ import type {
   Mode,
   Position,
   VerticalAlignment,
-  VisualStyle,
 } from "@/app/(dashboard)/editor/_types";
 
 // Nano Banana = Gemini 2.5 Flash Image. Server-only — never ships the key
@@ -44,7 +42,6 @@ type ApiPayload = {
   };
   composition?: { text_alignment?: Alignment; text_vertical?: VerticalAlignment };
   style?: {
-    visual_style?: VisualStyle;
     color_palette?: string[];
     lighting?: Lighting;
     dimensions?: Dimensions;
@@ -198,7 +195,6 @@ function buildPrompt(p: ApiPayload): string {
   // Look: style + lighting + palette + aspect.
   const style = p.style ?? {};
   const lookBits: string[] = [];
-  if (style.visual_style) lookBits.push(VISUAL_STYLE[style.visual_style]);
   if (style.lighting) lookBits.push(LIGHTING[style.lighting]);
   if (Array.isArray(style.color_palette) && style.color_palette.length) {
     lookBits.push(

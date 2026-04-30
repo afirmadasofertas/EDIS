@@ -82,7 +82,6 @@ export function CenterPreview() {
           briefing: {
             niche: state.niche,
             mode: state.mode,
-            visualStyle: state.style.visualStyle,
             lighting: state.style.lighting,
             creativeNote: state.creativeNote,
             headline: state.copy.headline,

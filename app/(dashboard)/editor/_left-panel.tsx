@@ -40,7 +40,6 @@ import type {
   Lighting,
   Position,
   VerticalAlignment,
-  VisualStyle,
 } from "./_types";
 
 type IconOpt<T extends string | number> = { id: T; label: string; icon: IconSvgElement };
@@ -52,13 +51,6 @@ const LIGHTING_PRESETS: { id: Lighting; label: string; swatch: string[] }[] = [
   { id: "neutral", label: "Neutra", swatch: ["#2a2a2a", "#d8d8d8"] },
   { id: "dark", label: "Dark", swatch: ["#000000", "#222222"] },
   { id: "vibrant", label: "Vibrante", swatch: ["#ff006e", "#00e573"] },
-];
-
-const STYLES: LabelOpt<VisualStyle>[] = [
-  { id: "minimalist", label: "Minimal" },
-  { id: "bold", label: "Bold" },
-  { id: "lifestyle", label: "Lifestyle" },
-  { id: "corporate", label: "Corporate" },
 ];
 
 const DIMENSIONS: { id: Dimensions; label: string; sub: string; w: number; h: number }[] = [
@@ -123,7 +115,6 @@ export function LeftPanel() {
         body: JSON.stringify({
           niche: state.niche,
           mode: state.mode,
-          visualStyle: state.style.visualStyle,
           creativeNote: state.creativeNote,
         }),
       });
@@ -313,7 +304,7 @@ export function LeftPanel() {
           </div>
         </Section>
 
-        <Section icon={PaintBrush01Icon} label="Cores · Estilo">
+        <Section icon={PaintBrush01Icon} label="Cores">
           <div className="flex flex-wrap gap-1.5">
             {state.style.colorPalette.map((color, idx) => (
               <ColorSwatch
@@ -344,13 +335,6 @@ export function LeftPanel() {
                 Cor
               </button>
             )}
-          </div>
-          <div className="mt-2.5">
-            <ButtonRow
-              options={STYLES}
-              value={state.style.visualStyle}
-              onChange={(v) => patch("style", { visualStyle: v })}
-            />
           </div>
         </Section>
 
@@ -385,13 +369,6 @@ export function LeftPanel() {
           </div>
         </Section>
 
-        <Section icon={TextFontIcon} label="Tipografia">
-          <FontPicker
-            value={state.style.fontFamily}
-            onChange={(family) => patch("style", { fontFamily: family })}
-          />
-        </Section>
-
         <Section
           icon={Edit03Icon}
           label="Copy"
@@ -412,6 +389,21 @@ export function LeftPanel() {
               {copyError}
             </p>
           )}
+
+          {/* Compact font picker — typography only matters when copy
+              exists, so we co-locate it here with a small Aa label. */}
+          <div className="flex items-center gap-2">
+            <span className="flex shrink-0 items-center gap-1 font-mono text-[9.5px] uppercase tracking-[0.14em] text-edis-text-4">
+              <Icon icon={TextFontIcon} size={11} />
+              Fonte
+            </span>
+            <div className="flex-1">
+              <FontPicker
+                value={state.style.fontFamily}
+                onChange={(family) => patch("style", { fontFamily: family })}
+              />
+            </div>
+          </div>
 
           <div className="flex flex-col gap-3">
             <CopyField

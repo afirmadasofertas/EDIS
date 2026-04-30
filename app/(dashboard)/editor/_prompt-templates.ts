@@ -12,7 +12,6 @@ import type {
   Mode,
   Position,
   VerticalAlignment,
-  VisualStyle,
 } from "./_types";
 
 // Hard rules that ship with EVERY generation. These guard fidelity to the
@@ -91,17 +90,6 @@ export const LIGHTING: Record<Lighting, string> = {
     "Low-key lighting: single hard rim light, deep natural shadows, dramatic chiaroscuro.",
   vibrant:
     "Studio lighting with colored gels used as practicals — saturated background while the subject's skin stays naturally lit and photographic.",
-};
-
-export const VISUAL_STYLE: Record<VisualStyle, string> = {
-  minimalist:
-    "Minimalist direction: clean composition, generous negative space, single hero element, restrained palette.",
-  bold:
-    "Bold direction: high contrast, large clean typography, saturated background colors, scroll-stopping impact.",
-  lifestyle:
-    "Lifestyle direction: candid natural moment, real-world environment, authentic textures, documentary feel.",
-  corporate:
-    "Corporate direction: polished editorial finish, clean grid layout, restrained palette, premium magazine register.",
 };
 
 export const DIMENSIONS: Record<Dimensions, string> = {

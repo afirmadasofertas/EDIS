@@ -10,7 +10,6 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
 type Body = {
   niche?: string;
   mode?: "editorial" | "campaign";
-  visualStyle?: string;
   creativeNote?: string;
 };
 
@@ -109,13 +108,11 @@ function buildCopyPrompt(b: Body): string {
     b.mode === "campaign"
       ? "campanha brasileira de SaaS / produto (poster cinematográfico, urgência, hook)"
       : "editorial premium (magazine, sofisticado, naturalístico)";
-  const styleLabel = b.visualStyle ?? "bold";
   const note = b.creativeNote?.trim();
 
   return [
     `Você é copywriter sênior brasileiro especializado em direct response e ads para ${modeLabel}.`,
     `Nicho do anúncio: ${niche}.`,
-    `Estilo visual: ${styleLabel}.`,
     note ? `Direção criativa adicional: ${note}.` : "",
     "",
     "Gere 3 opções para CADA campo abaixo, em PT-BR, alinhadas ao nicho e ao estilo:",
