@@ -56,18 +56,28 @@ export function ShareFolderDialog({
   const [share, setShare] = useState<FolderShare | null>(null);
   const [duration, setDuration] = useState<string>("7d");
   const [copied, setCopied] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [, setTick] = useState(0); // forces re-render for live countdown
 
   // Load the existing share (if any) whenever the dialog opens.
   useEffect(() => {
     if (!open) return;
-    const existing = getShareForFolder(folderId);
-    if (existing && !isExpired(existing)) {
-      setShare(existing);
-    } else {
-      setShare(null);
-    }
-    setCopied(false);
+    let cancelled = false;
+    (async () => {
+      setError(null);
+      const existing = await getShareForFolder(folderId);
+      if (cancelled) return;
+      if (existing && !isExpired(existing)) {
+        setShare(existing);
+      } else {
+        setShare(null);
+      }
+      setCopied(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [open, folderId]);
 
   // Tick the countdown every second while the dialog is open and a share
@@ -87,11 +97,19 @@ export function ShareFolderDialog({
   const expired = share ? isExpired(share) : false;
   const remaining = share ? formatRemaining(share.expiresAt) : "";
 
-  const handleGenerate = useCallback(() => {
-    const opt = EXPIRY_OPTIONS.find((o) => o.value === duration);
-    const next = createShare(folderId, opt?.ms ?? null);
-    setShare(next);
-    setCopied(false);
+  const handleGenerate = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const opt = EXPIRY_OPTIONS.find((o) => o.value === duration);
+      const next = await createShare(folderId, opt?.ms ?? null);
+      setShare(next);
+      setCopied(false);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }, [duration, folderId]);
 
   const handleCopy = useCallback(async () => {
@@ -105,11 +123,19 @@ export function ShareFolderDialog({
     }
   }, [shareUrl]);
 
-  const handleRevoke = useCallback(() => {
+  const handleRevoke = useCallback(async () => {
     if (!share) return;
-    revokeShare(share.shareId);
-    setShare(null);
-    setCopied(false);
+    setBusy(true);
+    setError(null);
+    try {
+      await revokeShare(share.shareId);
+      setShare(null);
+      setCopied(false);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }, [share]);
 
   return (
@@ -204,11 +230,17 @@ export function ShareFolderDialog({
                   Depois de expirar, o link é invalidado e os acessos registrados são apagados.
                 </p>
               </div>
+              {error && (
+                <p className="rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-[12.5px] text-red-400">
+                  {error}
+                </p>
+              )}
               <Button
                 type="button"
                 size="sm"
+                disabled={busy}
                 onClick={handleGenerate}
-                className="h-9 gap-2 self-start bg-primary text-[13px] font-medium text-primary-foreground hover:bg-[#33eb8c]"
+                className="h-9 gap-2 self-start bg-primary text-[13px] font-medium text-primary-foreground hover:bg-[#33eb8c] disabled:opacity-60"
               >
                 <Icon
                   icon={Link01Icon}
@@ -216,7 +248,7 @@ export function ShareFolderDialog({
                   strokeWidth={2}
                   className="size-[14px]"
                 />
-                Gerar link
+                {busy ? "Gerando…" : "Gerar link"}
               </Button>
             </div>
           ) : (
@@ -294,12 +326,18 @@ export function ShareFolderDialog({
                   type="button"
                   size="sm"
                   variant="outline"
+                  disabled={busy}
                   onClick={handleRevoke}
-                  className="h-8 shrink-0 border-[#ff5470]/30 bg-[#ff5470]/10 text-[12px] text-[#ff5470] hover:border-[#ff5470]/50 hover:bg-[#ff5470]/20"
+                  className="h-8 shrink-0 border-[#ff5470]/30 bg-[#ff5470]/10 text-[12px] text-[#ff5470] hover:border-[#ff5470]/50 hover:bg-[#ff5470]/20 disabled:opacity-60"
                 >
-                  Revogar
+                  {busy ? "Revogando…" : "Revogar"}
                 </Button>
               </div>
+              {error && (
+                <p className="rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-[12.5px] text-red-400">
+                  {error}
+                </p>
+              )}
             </div>
           )}
         </div>

@@ -1,10 +1,11 @@
 /**
- * Mock share store. Backed by localStorage so public /s/[id] pages opened in
- * a new tab can read the same data. Will be replaced by a real backend
- * (signed tokens + server-side expiry enforcement + download telemetry).
+ * Folder share management — backed by the public.drive_shares table in
+ * Supabase. Owner-RLS + a public read policy for non-expired shares means:
+ *   - the dialog (authed) can create / read / revoke their own shares
+ *   - the /s/<id> page (anon) can resolve the share, folder, and files
  */
 
-const STORAGE_KEY = "edis-drive-shares";
+import { createClient } from "@/lib/supabase/client";
 
 export type FolderShare = {
   shareId: string;
@@ -20,93 +21,109 @@ export const EXPIRY_OPTIONS: ReadonlyArray<{
   label: string;
   ms: number | null;
 }> = [
-  { value: "1h",  label: "1 hora",   ms: 60 * 60 * 1000 },
+  { value: "1h", label: "1 hora", ms: 60 * 60 * 1000 },
   { value: "24h", label: "24 horas", ms: 24 * 60 * 60 * 1000 },
-  { value: "7d",  label: "7 dias",   ms: 7 * 24 * 60 * 60 * 1000 },
-  { value: "30d", label: "30 dias",  ms: 30 * 24 * 60 * 60 * 1000 },
-  { value: "never", label: "Nunca",  ms: null },
+  { value: "7d", label: "7 dias", ms: 7 * 24 * 60 * 60 * 1000 },
+  { value: "30d", label: "30 dias", ms: 30 * 24 * 60 * 60 * 1000 },
+  { value: "never", label: "Nunca", ms: null },
 ];
 
-function safeParse(raw: string | null): Record<string, FolderShare> {
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw);
-    return typeof parsed === "object" && parsed !== null ? parsed : {};
-  } catch {
-    return {};
-  }
+type Row = {
+  id: string;
+  folder_id: string;
+  expires_at: string | null;
+  created_at: string;
+  download_count: number;
+};
+
+function rowToShare(r: Row): FolderShare {
+  return {
+    shareId: r.id,
+    folderId: r.folder_id,
+    expiresAt: r.expires_at ? Date.parse(r.expires_at) : null,
+    createdAt: Date.parse(r.created_at),
+    downloadCount: r.download_count,
+  };
 }
 
-function loadAll(): Record<string, FolderShare> {
-  if (typeof window === "undefined") return {};
-  return safeParse(window.localStorage.getItem(STORAGE_KEY));
-}
-
-function saveAll(shares: Record<string, FolderShare>) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(shares));
-}
-
-/** 8-char alphanumeric id (collisions extremely unlikely in this demo). */
+/** Short URL-safe id, similar to the legacy localStorage version. */
 function newId(): string {
-  return Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 6);
+  return (
+    Math.random().toString(36).slice(2, 6) +
+    Math.random().toString(36).slice(2, 6)
+  );
 }
 
-export function getShareForFolder(folderId: string): FolderShare | null {
-  const all = loadAll();
-  const hit = Object.values(all).find((s) => s.folderId === folderId);
-  return hit ?? null;
+export async function getShareForFolder(
+  folderId: string
+): Promise<FolderShare | null> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("drive_shares")
+    .select("id, folder_id, expires_at, created_at, download_count")
+    .eq("folder_id", folderId)
+    .maybeSingle();
+  return data ? rowToShare(data as Row) : null;
 }
 
-export function getShare(shareId: string): FolderShare | null {
-  return loadAll()[shareId] ?? null;
+export async function getShare(shareId: string): Promise<FolderShare | null> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("drive_shares")
+    .select("id, folder_id, expires_at, created_at, download_count")
+    .eq("id", shareId)
+    .maybeSingle();
+  return data ? rowToShare(data as Row) : null;
 }
 
-export function createShare(
+export async function createShare(
   folderId: string,
   durationMs: number | null
-): FolderShare {
-  const all = loadAll();
-  // Revoke any existing share for the same folder so we only ever have one.
-  for (const [id, s] of Object.entries(all)) {
-    if (s.folderId === folderId) delete all[id];
-  }
-  const share: FolderShare = {
-    shareId: newId(),
-    folderId,
-    expiresAt: durationMs === null ? null : Date.now() + durationMs,
-    createdAt: Date.now(),
-    downloadCount: 0,
-  };
-  all[share.shareId] = share;
-  saveAll(all);
-  return share;
+): Promise<FolderShare> {
+  const supabase = createClient();
+  const { data: userRes } = await supabase.auth.getUser();
+  if (!userRes.user) throw new Error("Faça login para gerar links.");
+
+  // Drop the existing share for this folder, if any (unique constraint).
+  await supabase.from("drive_shares").delete().eq("folder_id", folderId);
+
+  const id = newId();
+  const expiresAt =
+    durationMs === null ? null : new Date(Date.now() + durationMs).toISOString();
+
+  const { data, error } = await supabase
+    .from("drive_shares")
+    .insert({
+      id,
+      user_id: userRes.user.id,
+      folder_id: folderId,
+      expires_at: expiresAt,
+    })
+    .select("id, folder_id, expires_at, created_at, download_count")
+    .single();
+  if (error) throw new Error(error.message);
+  return rowToShare(data as Row);
 }
 
-export function revokeShare(shareId: string) {
-  const all = loadAll();
-  delete all[shareId];
-  saveAll(all);
+export async function revokeShare(shareId: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("drive_shares")
+    .delete()
+    .eq("id", shareId);
+  if (error) throw new Error(error.message);
 }
 
-export function incrementDownload(shareId: string) {
-  const all = loadAll();
-  const share = all[shareId];
-  if (!share) return;
-  share.downloadCount += 1;
-  saveAll(all);
+export async function incrementDownload(shareId: string): Promise<void> {
+  const supabase = createClient();
+  await supabase.rpc("increment_share_downloads", { p_share_id: shareId });
 }
 
-/**
- * Returns true if the share is past its expiresAt. A null expiresAt means
- * "never expires".
- */
 export function isExpired(share: FolderShare): boolean {
   if (share.expiresAt === null) return false;
   return Date.now() > share.expiresAt;
 }
 
-/** Format remaining time as "Xd Yh", "Xh Ym", or "Xm Ys". */
 export function formatRemaining(expiresAt: number | null): string {
   if (expiresAt === null) return "Nunca expira";
   const ms = expiresAt - Date.now();

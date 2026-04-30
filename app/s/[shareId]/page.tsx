@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import {
   TimerIcon,
@@ -14,6 +13,7 @@ import { Icon } from "@/components/icon";
 import { EdisLogo } from "@/components/layout/edis-logo";
 import { FileCard } from "@/components/shared/file-card";
 import { FilePreviewDialog } from "@/components/shared/file-dialogs";
+import { createClient } from "@/lib/supabase/client";
 import {
   getShare,
   isExpired,
@@ -21,12 +21,12 @@ import {
   incrementDownload,
   type FolderShare,
 } from "@/app/(dashboard)/drive/_shares";
-import {
-  getFolderById,
-  getFolderFiles,
-  type DriveFolder,
-  type DriveFile,
+import type {
+  DriveFolder,
+  DriveFile,
 } from "@/app/(dashboard)/drive/_data";
+
+const BUCKET = "drive-files";
 
 type LoadState =
   | { kind: "loading" }
@@ -34,36 +34,93 @@ type LoadState =
   | { kind: "expired"; share: FolderShare }
   | { kind: "ok"; share: FolderShare; folder: DriveFolder; files: DriveFile[] };
 
-export default function PublicSharePage() {
-  const params = useParams<{ shareId: string }>();
-  const shareId = params?.shareId ?? "";
+type PageProps = {
+  params: Promise<{ shareId: string }>;
+};
+
+export default function PublicSharePage({ params }: PageProps) {
+  const { shareId } = use(params);
 
   const [state, setState] = useState<LoadState>({ kind: "loading" });
   const [, setTick] = useState(0);
   const [previewFile, setPreviewFile] = useState<DriveFile | null>(null);
 
-  // Resolve the share + folder on mount (and whenever shareId changes).
+  // Resolve the share, folder, and files. Public RLS lets the anon key
+  // see everything for an active share; for files we generate signed URLs
+  // so the private bucket renders without leaking the storage path.
   useEffect(() => {
     if (!shareId) {
       setState({ kind: "not-found" });
       return;
     }
-    const share = getShare(shareId);
-    if (!share) {
-      setState({ kind: "not-found" });
-      return;
-    }
-    if (isExpired(share)) {
-      setState({ kind: "expired", share });
-      return;
-    }
-    const folder = getFolderById(share.folderId);
-    if (!folder) {
-      setState({ kind: "not-found" });
-      return;
-    }
-    const files = getFolderFiles(folder.id);
-    setState({ kind: "ok", share, folder, files });
+
+    let cancelled = false;
+    (async () => {
+      const share = await getShare(shareId);
+      if (cancelled) return;
+      if (!share) {
+        setState({ kind: "not-found" });
+        return;
+      }
+      if (isExpired(share)) {
+        setState({ kind: "expired", share });
+        return;
+      }
+
+      const supabase = createClient();
+      const folderRes = await supabase
+        .from("drive_folders")
+        .select("id, name, month, year, description")
+        .eq("id", share.folderId)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (folderRes.error || !folderRes.data) {
+        setState({ kind: "not-found" });
+        return;
+      }
+
+      const folder: DriveFolder = {
+        id: folderRes.data.id,
+        name: folderRes.data.name,
+        month: folderRes.data.month,
+        year: folderRes.data.year,
+        fileCount: 0,
+        description: folderRes.data.description ?? undefined,
+      };
+
+      const filesRes = await supabase
+        .from("drive_files")
+        .select("id, name, size, kind, storage_path")
+        .eq("folder_id", share.folderId)
+        .order("created_at", { ascending: true });
+
+      const rows = filesRes.data ?? [];
+      const signedUrls = await Promise.all(
+        rows.map(async (r) => {
+          if (!r.storage_path) return "";
+          const { data } = await supabase.storage
+            .from(BUCKET)
+            .createSignedUrl(r.storage_path, 60 * 60); // 1h
+          return data?.signedUrl ?? "";
+        })
+      );
+
+      const files: DriveFile[] = rows.map((r, i) => ({
+        id: r.id,
+        name: r.name,
+        size: r.size ?? 0,
+        kind: (r.kind ?? "other") as DriveFile["kind"],
+        thumbnailUrl: signedUrls[i],
+      }));
+
+      if (cancelled) return;
+      setState({ kind: "ok", share, folder, files });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [shareId]);
 
   // Countdown tick once per second while the share is live with a finite expiry.
@@ -71,8 +128,6 @@ export default function PublicSharePage() {
     if (state.kind !== "ok" || state.share.expiresAt === null) return;
     const id = window.setInterval(() => {
       setTick((t) => t + 1);
-      // Re-check expiry each tick — transition to expired state if the
-      // deadline crosses while the page is open.
       if (isExpired(state.share)) {
         setState({ kind: "expired", share: state.share });
       }
@@ -134,16 +189,15 @@ export default function PublicSharePage() {
   const expiringSoon =
     share.expiresAt !== null && share.expiresAt - Date.now() < 60 * 60 * 1000;
 
-  function handleFileDownload(file: DriveFile) {
+  async function handleFileDownload(file: DriveFile) {
     if (!file.thumbnailUrl) return;
-    incrementDownload(share.shareId);
+    await incrementDownload(share.shareId);
     window.open(file.thumbnailUrl, "_blank", "noopener,noreferrer");
-    setTick((t) => t + 1); // reflect the new count in stats
+    setTick((t) => t + 1);
   }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Top chrome — branded, public */}
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
           <Link
@@ -184,7 +238,6 @@ export default function PublicSharePage() {
         </div>
       </header>
 
-      {/* Folder meta */}
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="flex flex-col gap-1.5">
           <span className="edis-tag">{folder.name}</span>
@@ -202,19 +255,28 @@ export default function PublicSharePage() {
           </p>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {files.map((f) => (
-            <FileCard
-              key={f.id}
-              name={f.name}
-              size={f.size}
-              kind={f.kind}
-              thumbnailUrl={f.thumbnailUrl}
-              onDownload={() => handleFileDownload(f)}
-              onPreview={() => setPreviewFile(f)}
-            />
-          ))}
-        </div>
+        {files.length === 0 ? (
+          <div className="mt-10 flex min-h-[260px] flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-10 text-center">
+            <span className="edis-tag">Sem arquivos</span>
+            <p className="text-[13px] text-edis-text-3">
+              A pasta compartilhada está vazia.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {files.map((f) => (
+              <FileCard
+                key={f.id}
+                name={f.name}
+                size={f.size}
+                kind={f.kind}
+                thumbnailUrl={f.thumbnailUrl}
+                onDownload={() => handleFileDownload(f)}
+                onPreview={() => setPreviewFile(f)}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {previewFile && (
