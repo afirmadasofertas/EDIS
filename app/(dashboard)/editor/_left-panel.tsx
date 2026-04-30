@@ -121,7 +121,7 @@ export function LeftPanel() {
   } = useEditor();
   const subjectFileRef = useRef<HTMLInputElement>(null);
   const refsFileRef = useRef<HTMLInputElement>(null);
-  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(true);
 
   async function handleSubjectUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
