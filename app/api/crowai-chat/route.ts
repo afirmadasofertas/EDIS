@@ -13,7 +13,10 @@ import {
 // copy-skills library so every reply stays in the Brazilian black-style
 // voice without forcing the user through a form.
 
-const MODEL = "gemini-2.5-flash";
+// gemini-3-pro-preview is the latest top-tier Gemini text model — best
+// copywriting voice + reasoning of the whole family. Slower than flash
+// but the quality bump is worth the wait for a chat UX.
+const MODEL = "gemini-3-pro-preview";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent`;
 
 type Message = {
@@ -74,7 +77,9 @@ export async function POST(req: Request) {
       contents,
       generationConfig: {
         temperature: 0.9,
-        maxOutputTokens: 2048,
+        // Bumped from 2k to 8k — long-form body copy + multi-headline
+        // replies were getting truncated mid-paragraph at 2k.
+        maxOutputTokens: 8192,
       },
     }),
   });
@@ -90,21 +95,24 @@ export async function POST(req: Request) {
   }
 
   // Re-stream Gemini's SSE chunks as plain text deltas so the client can
-  // append directly without parsing the upstream wire format.
+  // append directly without parsing the upstream wire format. We also
+  // track whether ANY content arrived — if Gemini finishes with no
+  // tokens (safety block, max tokens before any text, etc.) we surface
+  // a friendly hint instead of leaving the user staring at "Escrevendo".
   const decoder = new TextDecoder();
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const reader = upstream.body!.getReader();
       let buffer = "";
+      let receivedAny = false;
+      let finishReason: string | null = null;
       try {
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
 
-          // SSE frames are separated by a blank line; each frame starts with
-          // "data: <json>".
           const frames = buffer.split("\n\n");
           buffer = frames.pop() ?? "";
           for (const frame of frames) {
@@ -114,18 +122,36 @@ export async function POST(req: Request) {
             if (!jsonText || jsonText === "[DONE]") continue;
             try {
               const obj = JSON.parse(jsonText);
-              const parts = obj?.candidates?.[0]?.content?.parts;
+              const candidate = obj?.candidates?.[0];
+              const parts = candidate?.content?.parts;
               if (Array.isArray(parts)) {
                 for (const p of parts) {
                   if (typeof p?.text === "string" && p.text.length > 0) {
+                    receivedAny = true;
                     controller.enqueue(encoder.encode(p.text));
                   }
                 }
+              }
+              if (candidate?.finishReason) {
+                finishReason = candidate.finishReason;
               }
             } catch {
               // Skip malformed frames silently.
             }
           }
+        }
+
+        // Stream ended but Gemini produced zero text — most likely a
+        // safety filter or max-tokens-on-thinking. Tell the user.
+        if (!receivedAny) {
+          const reason = finishReason ?? "unknown";
+          const hint =
+            reason === "SAFETY"
+              ? "(O modelo bloqueou essa resposta por filtro de segurança. Reformula a pergunta.)"
+              : reason === "MAX_TOKENS"
+                ? "(O modelo gastou o limite pensando antes de escrever. Tenta uma pergunta mais direta.)"
+                : `(Sem resposta do modelo · finishReason=${reason}. Tenta de novo ou reformula.)`;
+          controller.enqueue(encoder.encode(hint));
         }
       } finally {
         controller.close();

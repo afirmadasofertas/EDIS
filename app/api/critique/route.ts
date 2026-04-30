@@ -6,7 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 // Cheap text model, fast turnaround, returns a JSON the UI can render
 // as score cards + actionable lists.
 
-const MODEL = "gemini-2.5-flash";
+// gemini-3-pro-preview handles multimodal (image + text) and gives
+// more nuanced critique than 2.5 flash.
+const MODEL = "gemini-3-pro-preview";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 type Body = {

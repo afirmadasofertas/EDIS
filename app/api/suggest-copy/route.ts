@@ -13,7 +13,9 @@ import {
 // independent of the image generation model. Uses the Brazilian black-
 // style copywriting skills library so suggestions don't read as AI.
 
-const MODEL = "gemini-2.5-flash";
+// gemini-3-pro-preview — same top-tier model as CrowAI chat. Slower
+// than flash but the headline quality is noticeably better.
+const MODEL = "gemini-3-pro-preview";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 type Body = {
