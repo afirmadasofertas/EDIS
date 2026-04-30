@@ -8,7 +8,6 @@ import type {
   Alignment,
   Dimensions,
   Framing,
-  Lighting,
   Mode,
   Position,
   VerticalAlignment,
@@ -77,19 +76,6 @@ export const FRAMING: Record<Framing, string> = {
   "close-up": "Tight close-up framing — head and shoulders or product macro, intimate scale.",
   medium: "Medium framing — waist-up or product in context, balanced scale.",
   wide: "Wide framing — full body or environmental product shot, expansive scale.",
-};
-
-export const LIGHTING: Record<Lighting, string> = {
-  cold:
-    "Cool-toned lighting: soft diffused key from a large softbox, slight cyan cast, crisp natural shadows.",
-  warm:
-    "Golden-hour lighting: warm sun as key, soft amber rim light wrapping the subject, long natural shadows on the face.",
-  neutral:
-    "Natural daylight: balanced key and fill, true-to-life colors, even exposure.",
-  dark:
-    "Low-key lighting: single hard rim light, deep natural shadows, dramatic chiaroscuro.",
-  vibrant:
-    "Studio lighting with colored gels used as practicals — saturated background while the subject's skin stays naturally lit and photographic.",
 };
 
 export const DIMENSIONS: Record<Dimensions, string> = {

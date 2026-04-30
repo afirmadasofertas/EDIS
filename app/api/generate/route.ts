@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import {
   DIMENSIONS,
   FRAMING,
-  LIGHTING,
   MODE,
   POSITION,
   SYSTEM_DIRECTIVE,
@@ -14,7 +13,6 @@ import type {
   Alignment,
   Dimensions,
   Framing,
-  Lighting,
   Mode,
   Position,
   VerticalAlignment,
@@ -43,7 +41,6 @@ type ApiPayload = {
   composition?: { text_alignment?: Alignment; text_vertical?: VerticalAlignment };
   style?: {
     color_palette?: string[];
-    lighting?: Lighting;
     dimensions?: Dimensions;
     font_family?: string;
   };
@@ -195,7 +192,6 @@ function buildPrompt(p: ApiPayload): string {
   // Look: style + lighting + palette + aspect.
   const style = p.style ?? {};
   const lookBits: string[] = [];
-  if (style.lighting) lookBits.push(LIGHTING[style.lighting]);
   if (Array.isArray(style.color_palette) && style.color_palette.length) {
     lookBits.push(
       `Color palette dominating the frame: ${style.color_palette.join(", ")}.`

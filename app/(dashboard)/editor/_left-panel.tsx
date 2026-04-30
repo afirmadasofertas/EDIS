@@ -15,7 +15,6 @@ import {
   Image02Icon,
   Note03Icon,
   PaintBrush01Icon,
-  Sun01Icon,
   TextAlignCenterIcon,
   TextAlignLeft01Icon,
   TextAlignRight01Icon,
@@ -37,21 +36,12 @@ import type {
   Alignment,
   Dimensions,
   Framing,
-  Lighting,
   Position,
   VerticalAlignment,
 } from "./_types";
 
 type IconOpt<T extends string | number> = { id: T; label: string; icon: IconSvgElement };
 type LabelOpt<T extends string | number> = { id: T; label: string };
-
-const LIGHTING_PRESETS: { id: Lighting; label: string; swatch: string[] }[] = [
-  { id: "cold", label: "Fria", swatch: ["#0b1d3a", "#7eb6ff"] },
-  { id: "warm", label: "Quente", swatch: ["#3a1d0b", "#ff9b54"] },
-  { id: "neutral", label: "Neutra", swatch: ["#2a2a2a", "#d8d8d8"] },
-  { id: "dark", label: "Dark", swatch: ["#000000", "#222222"] },
-  { id: "vibrant", label: "Vibrante", swatch: ["#ff006e", "#00e573"] },
-];
 
 const DIMENSIONS: { id: Dimensions; label: string; sub: string; w: number; h: number }[] = [
   { id: "9:16", label: "Stories", sub: "9:16", w: 9, h: 16 },
@@ -269,38 +259,6 @@ export function LeftPanel() {
               value={state.subject.framing}
               onChange={(v) => patch("subject", { framing: v })}
             />
-          </div>
-        </Section>
-
-        <Section icon={Sun01Icon} label="Iluminação">
-          <div className="grid grid-cols-5 gap-1.5">
-            {LIGHTING_PRESETS.map((p) => {
-              const active = state.style.lighting === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  title={p.label}
-                  onClick={() => patch("style", { lighting: p.id })}
-                  className={cn(
-                    "group flex flex-col items-center gap-1 rounded-md border p-1 transition-all",
-                    active
-                      ? "border-edis-mint bg-edis-mint/5"
-                      : "border-edis-line-2 bg-edis-ink-2 hover:border-edis-line-3"
-                  )}
-                >
-                  <div
-                    className="h-6 w-full rounded-sm"
-                    style={{
-                      background: `linear-gradient(135deg, ${p.swatch[0]}, ${p.swatch[1]})`,
-                    }}
-                  />
-                  <span className="font-mono text-[9px] uppercase tracking-[0.06em] text-edis-text-3">
-                    {p.label}
-                  </span>
-                </button>
-              );
-            })}
           </div>
         </Section>
 

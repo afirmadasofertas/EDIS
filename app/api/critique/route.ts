@@ -17,7 +17,6 @@ type Body = {
   briefing: {
     niche?: string;
     mode?: string;
-    lighting?: string;
     creativeNote?: string;
     headline?: string;
     subheadline?: string;
@@ -152,7 +151,6 @@ function buildCritiquePrompt(b: Body["briefing"]): string {
     "Briefing original:",
     `- Nicho: ${b?.niche || "não especificado"}`,
     `- Modo: ${b?.mode || "editorial"}`,
-    `- Iluminação: ${b?.lighting || "não especificada"}`,
     `- Direção criativa: ${b?.creativeNote || "—"}`,
     `- Headline esperado: "${b?.headline || ""}"`,
     `- Subheadline esperado: "${b?.subheadline || ""}"`,

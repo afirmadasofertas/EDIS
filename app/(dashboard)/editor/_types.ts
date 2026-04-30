@@ -6,7 +6,6 @@ export type Framing = "close-up" | "medium" | "wide";
 export type Position = "left" | "center" | "right";
 export type Alignment = "left" | "center" | "right";
 export type VerticalAlignment = "top" | "middle" | "bottom";
-export type Lighting = "cold" | "warm" | "neutral" | "dark" | "vibrant";
 export type Dimensions = "9:16" | "4:5" | "16:9" | "1:1";
 
 export type ReferenceImage = {
@@ -39,7 +38,6 @@ export type EditorState = {
   };
   style: {
     colorPalette: string[];
-    lighting: Lighting;
     dimensions: Dimensions;
     fontFamily: string;
   };
@@ -73,7 +71,6 @@ export const DEFAULT_STATE: EditorState = {
   },
   style: {
     colorPalette: ["#0a0a0a", "#00e573"],
-    lighting: "warm",
     dimensions: "9:16",
     fontFamily: "Inter",
   },
@@ -108,7 +105,6 @@ export function toApiPayload(s: EditorState) {
     },
     style: {
       color_palette: s.style.colorPalette,
-      lighting: s.style.lighting,
       dimensions: s.style.dimensions,
       font_family: s.style.fontFamily,
     },
