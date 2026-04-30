@@ -53,6 +53,11 @@ export const SYSTEM_DIRECTIVE = [
   // model loves to invent copy unless told otherwise.
   "Words appear in the image only when explicitly listed below as headline,",
   "subheadline or CTA. Spell each word exactly as written.",
+
+  // Final pass — anti-AI-slop guard. Common artifacts to watch for.
+  "Final pass before output: no extra fingers, no warped text, no plastic",
+  "skin, no melted hands, no watermark, no logo placeholders, no",
+  "duplicated facial features, no impossible jewelry or cropped accessories.",
 ].join(" ");
 
 // Top-level "look" preset — biases the model toward editorial photography
