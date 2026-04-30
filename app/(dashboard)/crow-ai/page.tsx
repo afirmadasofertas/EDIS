@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp01Icon,
-  Atom02Icon,
   Copy01Icon,
   RefreshIcon,
 } from "@hugeicons/core-free-icons";
@@ -13,13 +12,6 @@ import { cn } from "@/lib/utils";
 
 type Role = "user" | "assistant";
 type Message = { id: string; role: Role; content: string };
-
-const STARTERS = [
-  "Headlines pra um curso de Python pra dev junior",
-  "Body PAS pra promo de Black Friday em ecommerce de moda",
-  "Hooks de dor pra captura de lead — público é mãe empreendedora",
-  "Reescreve isso sem cara de IA: 'Transforme sua vida com nosso método'",
-];
 
 export default function CrowAIPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -117,35 +109,19 @@ export default function CrowAIPage() {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-7rem)] w-full max-w-3xl flex-col gap-3">
-      <header className="flex items-center justify-between gap-3 border-b border-edis-line-1 pb-3">
-        <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
-            <Icon icon={Atom02Icon} size={16} strokeWidth={1.5} />
-          </div>
-          <div className="flex flex-col">
-            <h1
-              className="font-display text-[16px] font-medium leading-tight tracking-tight text-foreground"
-              style={{ letterSpacing: "-0.02em" }}
-            >
-              CrowAI
-            </h1>
-            <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-edis-text-4">
-              Copywriter direct response
-            </p>
-          </div>
-        </div>
-        {messages.length > 0 && (
-          <button
-            type="button"
-            onClick={reset}
-            className="flex items-center gap-1.5 rounded-md border border-edis-line-2 bg-edis-ink-2 px-2.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-edis-text-3 transition-colors hover:bg-edis-ink-3 hover:text-foreground"
-          >
-            <Icon icon={RefreshIcon} size={11} />
-            Nova conversa
-          </button>
-        )}
-      </header>
+    <div className="relative mx-auto flex h-[calc(100vh-7rem)] w-full max-w-3xl flex-col gap-3">
+      {/* Floating reset — only appears once a conversation exists. */}
+      {messages.length > 0 && (
+        <button
+          type="button"
+          onClick={reset}
+          aria-label="Nova conversa"
+          title="Nova conversa"
+          className="absolute right-0 top-0 flex size-7 items-center justify-center rounded-md border border-edis-line-2 bg-edis-ink-2 text-edis-text-3 transition-colors hover:bg-edis-ink-3 hover:text-foreground"
+        >
+          <Icon icon={RefreshIcon} size={12} />
+        </button>
+      )}
 
       {/* Messages */}
       <div
@@ -153,7 +129,7 @@ export default function CrowAIPage() {
         className="flex flex-1 flex-col gap-4 overflow-y-auto pr-2"
       >
         {messages.length === 0 ? (
-          <EmptyState onPick={(t) => send(t)} />
+          <EmptyState />
         ) : (
           messages.map((m) => <MessageBubble key={m.id} message={m} streaming={streaming} />)
         )}
@@ -261,39 +237,19 @@ function MessageBubble({
   );
 }
 
-function EmptyState({ onPick }: { onPick: (text: string) => void }) {
+function EmptyState() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-5 py-12 text-center">
-      <Icon icon={Atom02Icon} size={40} className="text-edis-text-3" />
-      <div className="flex flex-col gap-1">
-        <h2
-          className="font-display text-[20px] font-medium tracking-tight text-foreground"
-          style={{ letterSpacing: "-0.02em" }}
-        >
-          Pergunta o que quiser sobre copy.
-        </h2>
-        <p className="max-w-md text-[13.5px] leading-[1.55] text-edis-text-3">
-          Hooks, headlines, body, reescrita, estratégia, debate de ângulo —
-          conversa direto comigo. Voz brasileira, sem cara de IA.
-        </p>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-edis-text-4">
-          Ou começa com
-        </span>
-        <div className="flex max-w-2xl flex-wrap justify-center gap-1.5">
-          {STARTERS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => onPick(s)}
-              className="rounded-full border border-edis-line-2 bg-edis-ink-2 px-3 py-1.5 text-[12px] text-edis-text-2 transition-colors hover:border-edis-mint/40 hover:text-foreground"
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 py-12 text-center">
+      <h2
+        className="font-display text-[22px] font-medium tracking-tight text-foreground"
+        style={{ letterSpacing: "-0.02em" }}
+      >
+        Pergunta o que quiser sobre copy.
+      </h2>
+      <p className="max-w-md text-[13.5px] leading-[1.55] text-edis-text-3">
+        Hooks, headlines, body, reescrita, estratégia — conversa direto.
+        Voz brasileira, sem cara de IA.
+      </p>
     </div>
   );
 }
