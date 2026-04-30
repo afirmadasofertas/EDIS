@@ -8,6 +8,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { Icon } from "@/components/icon";
+import { EdisLogo } from "@/components/layout/edis-logo";
 import { cn } from "@/lib/utils";
 
 type Role = "user" | "assistant";
@@ -211,8 +212,10 @@ function MessageBubble({
         )}
       >
         {isLastEmpty ? (
-          <span className="inline-flex items-center gap-1 text-edis-text-4">
-            <span className="size-1.5 animate-pulse rounded-full bg-edis-mint" />
+          <span className="inline-flex items-center gap-2 text-edis-text-4">
+            <span className="edis-raven-loop inline-flex">
+              <EdisLogo variant="mark" size={16} />
+            </span>
             <span className="font-mono text-[10.5px] uppercase tracking-[0.16em]">
               escrevendo
             </span>
@@ -239,17 +242,28 @@ function MessageBubble({
 
 function EmptyState() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-2 py-12 text-center">
-      <h2
-        className="font-display text-[22px] font-medium tracking-tight text-foreground"
-        style={{ letterSpacing: "-0.02em" }}
-      >
-        Pergunta o que quiser sobre copy.
-      </h2>
-      <p className="max-w-md text-[13.5px] leading-[1.55] text-edis-text-3">
-        Hooks, headlines, body, reescrita, estratégia — conversa direto.
-        Voz brasileira, sem cara de IA.
-      </p>
+    <div className="flex flex-1 flex-col items-center justify-center gap-5 py-12 text-center">
+      {/* Raven mark — sparkles loop continuously to give the surface a
+          subtle sign of life before the user types anything. */}
+      <div className="edis-raven-loop relative grid place-items-center">
+        <span
+          aria-hidden
+          className="absolute inset-0 -m-6 rounded-full bg-edis-mint/10 blur-2xl"
+        />
+        <EdisLogo variant="mark" size={56} />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <h2
+          className="font-display text-[22px] font-medium tracking-tight text-foreground"
+          style={{ letterSpacing: "-0.02em" }}
+        >
+          Pergunta o que quiser sobre copy.
+        </h2>
+        <p className="max-w-md text-[13.5px] leading-[1.55] text-edis-text-3">
+          Hooks, headlines, body, reescrita, estratégia — conversa direto.
+          Voz brasileira, sem cara de IA.
+        </p>
+      </div>
     </div>
   );
 }
