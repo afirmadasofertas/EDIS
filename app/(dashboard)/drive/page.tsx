@@ -72,19 +72,56 @@ export default function DrivePage() {
     month: string;
     year: number;
     description?: string;
+    files: File[];
   }) {
     const supabase = createClient();
     const { data: userRes } = await supabase.auth.getUser();
     if (!userRes.user) throw new Error("Faça login para criar pastas.");
+    const userId = userRes.user.id;
 
-    const { error } = await supabase.from("drive_folders").insert({
-      user_id: userRes.user.id,
-      name: folder.name,
-      month: folder.month,
-      year: folder.year,
-      description: folder.description ?? null,
-    });
-    if (error) throw new Error(error.message);
+    // Insert folder + return the new id so we can attach files to it.
+    const { data: created, error: insertErr } = await supabase
+      .from("drive_folders")
+      .insert({
+        user_id: userId,
+        name: folder.name,
+        month: folder.month,
+        year: folder.year,
+        description: folder.description ?? null,
+      })
+      .select("id")
+      .single();
+    if (insertErr) throw new Error(insertErr.message);
+
+    // If the user dropped files in the same dialog, push them to Storage
+    // and add drive_files rows pointing at the freshly created folder.
+    if (created && folder.files.length > 0) {
+      for (const file of folder.files) {
+        const safeName = file.name.replace(/[^\w.\-]/g, "_");
+        const objectPath = `${userId}/${created.id}/${crypto.randomUUID()}-${safeName}`;
+        const upload = await supabase.storage
+          .from("drive-files")
+          .upload(objectPath, file, { contentType: file.type, upsert: false });
+        if (upload.error) throw new Error(upload.error.message);
+
+        const kind = file.type.startsWith("image/")
+          ? "image"
+          : file.type.startsWith("video/")
+            ? "video"
+            : "other";
+
+        const fileInsert = await supabase.from("drive_files").insert({
+          user_id: userId,
+          folder_id: created.id,
+          name: file.name,
+          size: file.size,
+          kind,
+          storage_path: objectPath,
+        });
+        if (fileInsert.error) throw new Error(fileInsert.error.message);
+      }
+    }
+
     await refresh();
   }
 
