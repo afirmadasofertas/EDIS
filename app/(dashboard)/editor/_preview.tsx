@@ -1,10 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download01Icon, MagicWand01Icon } from "@hugeicons/core-free-icons";
+import {
+  CloudUploadIcon,
+  Download01Icon,
+  MagicWand01Icon,
+} from "@hugeicons/core-free-icons";
 
 import { Icon } from "@/components/icon";
 import { EdisLogo } from "@/components/layout/edis-logo";
+import { SaveToDriveDialog } from "@/components/shared/save-to-drive-dialog";
 import { useEditor } from "./_state";
 import { loadFont } from "./_fonts";
 import { toApiPayload, type Dimensions } from "./_types";
@@ -128,14 +133,29 @@ export function CenterPreview() {
           </div>
 
           {latestImage && (
-            <a
-              href={latestImage}
-              download={`edis-criativo-${Date.now()}.png`}
-              className="flex items-center gap-1.5 rounded-md border border-edis-line-2 bg-edis-ink-2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-edis-text-3 hover:bg-edis-ink-3 hover:text-foreground"
-            >
-              <Icon icon={Download01Icon} size={12} />
-              Baixar PNG
-            </a>
+            <div className="flex items-center gap-2">
+              <a
+                href={latestImage}
+                download={`edis-criativo-${Date.now()}.png`}
+                className="flex items-center gap-1.5 rounded-md border border-edis-line-2 bg-edis-ink-2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-edis-text-3 hover:bg-edis-ink-3 hover:text-foreground"
+              >
+                <Icon icon={Download01Icon} size={12} />
+                Baixar PNG
+              </a>
+              <SaveToDriveDialog
+                imageUrl={latestImage}
+                defaultFileName={`edis-criativo-${Date.now()}.png`}
+                trigger={
+                  <button
+                    type="button"
+                    className="flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-primary hover:bg-primary/15"
+                  >
+                    <Icon icon={CloudUploadIcon} size={12} />
+                    Salvar no Drive
+                  </button>
+                }
+              />
+            </div>
           )}
 
           {generationError && (
