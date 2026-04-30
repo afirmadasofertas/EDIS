@@ -215,7 +215,9 @@ function buildPrompt(p: ApiPayload): string {
 
 function buildTypographyBlock(p: ApiPayload): string {
   const copy = p.copy ?? {};
-  const fontName = p.style?.font_family ?? "modern sans-serif";
+  // Empty / missing font means "automatic" — let the model pick one that
+  // fits the mode and niche instead of locking to a specific family.
+  const explicitFont = p.style?.font_family?.trim();
 
   type Line = { role: string; text: string; weight: string; scale: string };
   const lines: Line[] = [];
@@ -250,10 +252,13 @@ function buildTypographyBlock(p: ApiPayload): string {
     return "Render zero text in the image — no headlines, captions, logos, signage, labels, watermarks, numbers or letters of any kind. The frame contains only the photographed subject and scene.";
   }
 
+  const fontPhrase = explicitFont
+    ? `"${explicitFont}" font`
+    : "a font that fits the mode and niche";
   const rendered = lines
     .map(
       (l) =>
-        `Render the ${l.role} "${l.text}" in a ${l.weight} ${fontName} font, ${l.scale}.`
+        `Render the ${l.role} "${l.text}" in a ${l.weight} ${fontPhrase}, ${l.scale}.`
     )
     .join(" ");
 

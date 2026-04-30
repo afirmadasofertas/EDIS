@@ -60,6 +60,8 @@ export function FontPicker({
     setOpen(false);
   }
 
+  const isAuto = !value;
+
   return (
     <div ref={wrapperRef} className="relative">
       <button
@@ -68,10 +70,15 @@ export function FontPicker({
         className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-edis-line-2 bg-edis-ink-2 px-2.5 text-left transition-colors hover:border-edis-line-3"
       >
         <span
-          className="truncate text-[13px] text-foreground"
-          style={{ fontFamily: `"${value}", system-ui, sans-serif` }}
+          className={cn(
+            "truncate text-[13px]",
+            isAuto ? "text-edis-text-4" : "text-foreground"
+          )}
+          style={
+            isAuto ? undefined : { fontFamily: `"${value}", system-ui, sans-serif` }
+          }
         >
-          {value}
+          {isAuto ? "Automática (modelo escolhe)" : value}
         </span>
         <Icon icon={ArrowDown01Icon} size={13} className="shrink-0 text-edis-text-4" />
       </button>
@@ -90,6 +97,34 @@ export function FontPicker({
           </div>
 
           <div className="max-h-[280px] overflow-y-auto py-1">
+            {/* "Automática" option — clears the explicit choice and lets the
+                model pick a font that fits the mode + niche. Always visible,
+                ignores the search filter. */}
+            <button
+              type="button"
+              onClick={() => {
+                onChange("");
+                setOpen(false);
+                setQuery("");
+              }}
+              className={cn(
+                "flex w-full items-center justify-between gap-2 border-b border-edis-line-1 px-2.5 py-1.5 text-left transition-colors",
+                isAuto ? "bg-edis-mint/10" : "hover:bg-edis-ink-2"
+              )}
+            >
+              <span className="text-[13px] text-foreground">
+                Automática
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-edis-text-4">
+                  modelo escolhe
+                </span>
+                {isAuto && (
+                  <Icon icon={Tick01Icon} size={12} className="text-edis-mint" />
+                )}
+              </span>
+            </button>
+
             {filtered.length === 0 ? (
               <div className="px-3 py-3 text-[12px] text-edis-text-4">
                 Nenhuma fonte. Tente o campo &quot;Custom&quot; abaixo.

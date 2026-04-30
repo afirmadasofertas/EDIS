@@ -104,7 +104,7 @@ export function CenterPreview() {
   }
 
   useEffect(() => {
-    loadFont(state.style.fontFamily);
+    if (state.style.fontFamily) loadFont(state.style.fontFamily);
   }, [state.style.fontFamily]);
 
   async function handleGenerate() {
@@ -216,7 +216,7 @@ export function CenterPreview() {
       <div className="flex flex-1 items-center justify-center overflow-auto p-6">
         <div className="flex flex-col items-center gap-3">
           <div
-            className="relative grid place-items-center overflow-hidden rounded-lg border border-edis-line-2 bg-edis-ink-1 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.7)]"
+            className="relative grid place-items-center overflow-hidden rounded-lg border border-edis-line-2 bg-edis-ink-1"
             style={{ width: dims.w, height: dims.h, aspectRatio: aspect }}
           >
             {/* Generating takes priority over the existing image — when the

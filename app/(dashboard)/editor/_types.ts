@@ -72,7 +72,8 @@ export const DEFAULT_STATE: EditorState = {
   style: {
     colorPalette: ["#0a0a0a", "#00e573"],
     dimensions: "9:16",
-    fontFamily: "Inter",
+    // Empty = "Automática" (let the model pick a font that fits).
+    fontFamily: "",
   },
   copy: {
     headline: "",
