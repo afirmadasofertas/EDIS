@@ -3,11 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import {
   DIMENSIONS,
   FRAMING,
-  GENDER,
   LIGHTING,
   MODE,
   POSITION,
-  QUANTITY,
   SYSTEM_DIRECTIVE,
   TEXT_ALIGNMENT,
   TEXT_VERTICAL,
@@ -17,11 +15,9 @@ import type {
   Alignment,
   Dimensions,
   Framing,
-  Gender,
   Lighting,
   Mode,
   Position,
-  Quantity,
   VerticalAlignment,
   VisualStyle,
 } from "@/app/(dashboard)/editor/_types";
@@ -43,8 +39,6 @@ type ApiPayload = {
   creative_note?: string;
   subject?: {
     photos_count?: number;
-    quantity?: Quantity;
-    gender?: Gender;
     framing?: Framing;
     position?: Position;
   };
@@ -185,10 +179,10 @@ function buildPrompt(p: ApiPayload): string {
     );
   }
 
-  // Subject characterization — narrative form, joined into one paragraph.
+  // Subject framing + position — quantity / gender intentionally omitted:
+  // the model already sees them in the attached photo, and forcing the
+  // user to pick can fight what the photo actually shows.
   const subjectBits: string[] = [];
-  if (subj.quantity) subjectBits.push(QUANTITY[subj.quantity]);
-  if (subj.gender && GENDER[subj.gender]) subjectBits.push(GENDER[subj.gender]);
   if (subj.framing) subjectBits.push(FRAMING[subj.framing]);
   if (subj.position) subjectBits.push(POSITION[subj.position]);
   if (subjectBits.length) blocks.push(subjectBits.join(" "));

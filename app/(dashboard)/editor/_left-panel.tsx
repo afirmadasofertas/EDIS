@@ -20,10 +20,10 @@ import {
   TextAlignLeft01Icon,
   TextAlignRight01Icon,
   TextFontIcon,
-  UserGroupIcon,
   UserIcon,
-  UserMultipleIcon,
   AspectRatioIcon,
+  MagicWand01Icon,
+  SparklesIcon,
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 
@@ -39,10 +39,8 @@ import type {
   Alignment,
   Dimensions,
   Framing,
-  Gender,
   Lighting,
   Position,
-  Quantity,
   VerticalAlignment,
   VisualStyle,
 } from "./_types";
@@ -96,18 +94,6 @@ const TEXT_VERTICAL: IconOpt<VerticalAlignment>[] = [
   { id: "bottom", label: "Inferior", icon: AlignBottomIcon },
 ];
 
-const QUANTITIES: IconOpt<Quantity>[] = [
-  { id: 1, label: "1 pessoa", icon: UserIcon },
-  { id: 2, label: "2 pessoas", icon: UserMultipleIcon },
-  { id: 3, label: "3+ pessoas", icon: UserGroupIcon },
-];
-
-const GENDERS: LabelOpt<Gender>[] = [
-  { id: "male", label: "Masc" },
-  { id: "female", label: "Fem" },
-  { id: "neutral", label: "Neutro" },
-];
-
 export function LeftPanel() {
   const {
     state,
@@ -121,6 +107,40 @@ export function LeftPanel() {
   const subjectFileRef = useRef<HTMLInputElement>(null);
   const refsFileRef = useRef<HTMLInputElement>(null);
   const [noteOpen, setNoteOpen] = useState(true);
+  const [copySuggestions, setCopySuggestions] = useState<{
+    headlines: string[];
+    subheadlines: string[];
+    ctas: string[];
+  } | null>(null);
+  const [copyLoading, setCopyLoading] = useState(false);
+  const [copyError, setCopyError] = useState<string | null>(null);
+
+  async function handleSuggestCopy() {
+    setCopyLoading(true);
+    setCopyError(null);
+    try {
+      const res = await fetch("/api/suggest-copy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          niche: state.niche,
+          mode: state.mode,
+          visualStyle: state.style.visualStyle,
+          creativeNote: state.creativeNote,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      setCopySuggestions(data);
+    } catch (err) {
+      setCopyError((err as Error).message);
+    } finally {
+      setCopyLoading(false);
+    }
+  }
 
   async function handleSubjectUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -252,25 +272,6 @@ export function LeftPanel() {
             onChange={handleSubjectUpload}
           />
 
-          <div className="mt-3 grid grid-cols-3 gap-1.5">
-            {QUANTITIES.map((q) => (
-              <IconButton
-                key={q.id}
-                active={state.subject.quantity === q.id}
-                icon={q.icon}
-                title={q.label}
-                onClick={() => patch("subject", { quantity: q.id })}
-              />
-            ))}
-          </div>
-
-          <div className="mt-1.5">
-            <ButtonRow
-              options={GENDERS}
-              value={state.subject.gender}
-              onChange={(v) => patch("subject", { gender: v })}
-            />
-          </div>
         </Section>
 
         <Section icon={CropIcon} label="Composição">
@@ -405,25 +406,45 @@ export function LeftPanel() {
           />
         </Section>
 
-        <Section icon={Edit03Icon} label="Copy">
-          <div className="flex flex-col gap-1.5">
-            <Input
+        <Section
+          icon={Edit03Icon}
+          label="Copy"
+          rightSlot={
+            <button
+              type="button"
+              onClick={handleSuggestCopy}
+              disabled={copyLoading}
+              className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.12em] text-edis-mint hover:text-foreground disabled:opacity-50"
+            >
+              <Icon icon={MagicWand01Icon} size={11} />
+              {copyLoading ? "Sugerindo…" : "Sugerir"}
+            </button>
+          }
+        >
+          {copyError && (
+            <p className="rounded-md border border-red-500/20 bg-red-500/10 px-2 py-1.5 text-[11.5px] text-red-400">
+              {copyError}
+            </p>
+          )}
+
+          <div className="flex flex-col gap-3">
+            <CopyField
               value={state.copy.headline}
-              onChange={(e) => patch("copy", { headline: e.target.value })}
+              onChange={(v) => patch("copy", { headline: v })}
               placeholder="Headline"
-              className="h-9 border-edis-line-2 bg-edis-ink-2 text-[13px]"
+              suggestions={copySuggestions?.headlines}
             />
-            <Input
+            <CopyField
               value={state.copy.subheadline}
-              onChange={(e) => patch("copy", { subheadline: e.target.value })}
+              onChange={(v) => patch("copy", { subheadline: v })}
               placeholder="Subheadline"
-              className="h-9 border-edis-line-2 bg-edis-ink-2 text-[13px]"
+              suggestions={copySuggestions?.subheadlines}
             />
-            <Input
+            <CopyField
               value={state.copy.cta}
-              onChange={(e) => patch("copy", { cta: e.target.value })}
+              onChange={(v) => patch("copy", { cta: v })}
               placeholder="CTA"
-              className="h-9 border-edis-line-2 bg-edis-ink-2 text-[13px]"
+              suggestions={copySuggestions?.ctas}
             />
           </div>
 
@@ -624,6 +645,48 @@ function IconButton({
     >
       <Icon icon={icon} size={15} />
     </button>
+  );
+}
+
+/**
+ * Copy input + suggestion pills underneath. When the user runs "Sugerir"
+ * the server returns 3 alternatives; we render them as small clickable
+ * chips that fill the input.
+ */
+function CopyField({
+  value,
+  onChange,
+  placeholder,
+  suggestions,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  suggestions?: string[];
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="h-9 border-edis-line-2 bg-edis-ink-2 text-[13px]"
+      />
+      {suggestions && suggestions.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {suggestions.map((s, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onChange(s)}
+              className="rounded-full border border-edis-mint/30 bg-edis-mint/5 px-2 py-0.5 text-[11px] text-edis-text-2 transition-colors hover:border-edis-mint/60 hover:bg-edis-mint/10 hover:text-foreground"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

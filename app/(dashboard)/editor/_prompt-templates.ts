@@ -8,11 +8,9 @@ import type {
   Alignment,
   Dimensions,
   Framing,
-  Gender,
   Lighting,
   Mode,
   Position,
-  Quantity,
   VerticalAlignment,
   VisualStyle,
 } from "./_types";
@@ -80,18 +78,6 @@ export const FRAMING: Record<Framing, string> = {
   "close-up": "Tight close-up framing — head and shoulders or product macro, intimate scale.",
   medium: "Medium framing — waist-up or product in context, balanced scale.",
   wide: "Wide framing — full body or environmental product shot, expansive scale.",
-};
-
-export const GENDER: Record<Gender, string> = {
-  male: "Subject is masculine-presenting.",
-  female: "Subject is feminine-presenting.",
-  neutral: "",
-};
-
-export const QUANTITY: Record<Quantity, string> = {
-  1: "A single subject in frame.",
-  2: "Two subjects in frame, naturally interacting.",
-  3: "Three or more subjects in frame, group composition.",
 };
 
 export const LIGHTING: Record<Lighting, string> = {

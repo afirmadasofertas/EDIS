@@ -2,8 +2,6 @@
 // the JSON shipped to /api/generate is derived from it.
 
 export type Mode = "editorial" | "campaign";
-export type Quantity = 1 | 2 | 3;
-export type Gender = "male" | "female" | "neutral";
 export type Framing = "close-up" | "medium" | "wide";
 export type Position = "left" | "center" | "right";
 export type Alignment = "left" | "center" | "right";
@@ -33,8 +31,6 @@ export type EditorState = {
   creativeNote: string;
   subject: {
     photos: SubjectPhoto[];
-    quantity: Quantity;
-    gender: Gender;
     framing: Framing;
     position: Position;
   };
@@ -70,8 +66,6 @@ export const DEFAULT_STATE: EditorState = {
   creativeNote: "",
   subject: {
     photos: [],
-    quantity: 1,
-    gender: "neutral",
     framing: "medium",
     position: "center",
   },
@@ -106,8 +100,6 @@ export function toApiPayload(s: EditorState) {
     subject: {
       // Image data ships separately as binary parts. Metadata only here.
       photos_count: s.subject.photos.length,
-      quantity: s.subject.quantity,
-      gender: s.subject.gender,
       framing: s.subject.framing,
       position: s.subject.position,
     },
