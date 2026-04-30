@@ -27,7 +27,11 @@ export default function DrivePage() {
     const [foldersRes, promptsRes] = await Promise.all([
       supabase
         .from("drive_folders")
-        .select("id, name, month, year, description, created_at")
+        // Embed an aggregate count of related drive_files rows so each card
+        // can show the real number without an N+1 round-trip.
+        .select(
+          "id, name, month, year, description, created_at, drive_files(count)"
+        )
         .order("year", { ascending: false })
         .order("created_at", { ascending: false }),
       supabase
@@ -38,14 +42,18 @@ export default function DrivePage() {
 
     if (foldersRes.data) {
       setFolders(
-        foldersRes.data.map((f) => ({
-          id: f.id,
-          name: f.name,
-          month: f.month,
-          year: f.year,
-          fileCount: 0, // TODO: join with drive_files count when files ship
-          description: f.description ?? undefined,
-        }))
+        foldersRes.data.map((f) => {
+          // Supabase returns the embedded count as `drive_files: [{ count: N }]`.
+          const countRow = (f.drive_files as { count: number }[] | null)?.[0];
+          return {
+            id: f.id,
+            name: f.name,
+            month: f.month,
+            year: f.year,
+            fileCount: countRow?.count ?? 0,
+            description: f.description ?? undefined,
+          };
+        })
       );
     }
     if (promptsRes.data) {
